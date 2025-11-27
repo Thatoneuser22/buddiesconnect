@@ -116,6 +116,10 @@ export async function registerRoutes(
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+    
+    // Broadcast avatar update to all clients
+    broadcast({ type: "avatar_updated", userId: user.id, avatarUrl: user.avatarUrl, username: user.username });
+    
     res.json({ user });
   });
 
@@ -160,6 +164,9 @@ export async function registerRoutes(
                 .map(u => ({ id: u.id, username: u.username, avatarColor: u.avatarColor, avatarUrl: u.avatarUrl, status: u.status }));
               
               broadcast({ type: "users_online", users: onlineUsers });
+              
+              // Send initial online users to the connecting user
+              sendToUser(odId, { type: "users_online", users: onlineUsers });
             }
             break;
           }

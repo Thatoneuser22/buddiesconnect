@@ -118,7 +118,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       
       switch (data.type) {
         case "message":
-          addMessage(data.message);
+          // Only add if not already added by optimistic update
+          setMessages(prev => {
+            const exists = prev.some(m => (m.id === data.message.id || (m.userId === data.message.userId && m.timestamp === data.message.timestamp && m.content === data.message.content)));
+            if (exists) return prev;
+            return [...prev, data.message];
+          });
           break;
         case "typing_start":
           setTypingUsers(prev => {
@@ -175,6 +180,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           });
           setOnlineUsers(newMap);
           break;
+        case "avatar_updated":
+          // Update all messages from this user with new avatar
+          setMessages(prev => prev.map(m => m.userId === data.userId ? { ...m, avatarUrl: data.avatarUrl } : m));
+          // Update user in onlineUsers
+          setOnlineUsers(prev => {
+            const next = new Map(prev);
+            const user = next.get(data.userId);
+            if (user) {
+              next.set(data.userId, { ...user, avatarUrl: data.avatarUrl });
+            }
+            return next;
+          });
+          // Update currentUser if it's the same user
+          if (currentUser?.id === data.userId) {
+            setCurrentUser({ ...currentUser, avatarUrl: data.avatarUrl });
+          }
+          break;
         case "error":
           // Error will be handled by calling context (e.g., spam prevention)
           break;
@@ -187,14 +209,33 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [currentUser, addMessage, activeDM]);
 
   const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string, videoName?: string, audioName?: string) => {
-    if (!wsRef.current || !currentUser) return;
+    if (!wsRef.current || !currentUser || !activeChannel) return;
+    
+    // Optimistic update - add message immediately
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content,
+      channelId: activeChannel.id,
+      userId: currentUser.id,
+      username: currentUser.username,
+      avatarColor: currentUser.avatarColor,
+      avatarUrl: currentUser.avatarUrl,
+      timestamp: new Date().toISOString(),
+      imageUrl,
+      videoUrl,
+      videoName,
+      audioUrl,
+      audioName,
+      replyToId,
+    };
+    addMessage(optimisticMessage);
     
     const messageData = activeDM 
       ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl, videoName, audioUrl, audioName, replyToId }
-      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl, videoName, audioUrl, audioName, replyToId };
+      : { type: "message", content, channelId: activeChannel.id, imageUrl, videoUrl, videoName, audioUrl, audioName, replyToId };
     
     wsRef.current.send(JSON.stringify(messageData));
-  }, [currentUser, activeChannel, activeDM]);
+  }, [currentUser, activeChannel, activeDM, addMessage]);
 
   const sendTypingStart = useCallback(() => {
     if (!wsRef.current || !activeChannel) return;

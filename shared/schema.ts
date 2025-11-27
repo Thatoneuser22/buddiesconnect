@@ -121,4 +121,5 @@ export type WebSocketMessage =
   | { type: "friend_request"; request: FriendRequest }
   | { type: "friend_accepted"; friend: Friend }
   | { type: "dm_message"; message: Message; odId: string }
-  | { type: "users_online"; users: { id: string; username: string; avatarColor: string; avatarUrl?: string; status: UserStatus }[] };
+  | { type: "users_online"; users: { id: string; username: string; avatarColor: string; avatarUrl?: string; status: UserStatus }[] }
+  | { type: "avatar_updated"; userId: string; avatarUrl: string; username: string };
