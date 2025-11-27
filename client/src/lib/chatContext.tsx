@@ -170,7 +170,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         case "users_online":
           const newMap = new Map<string, User>();
           data.users.forEach(u => {
-            const user: User = { id: u.id, username: u.username, avatarColor: "", status: u.status };
+            const user: User = { id: u.id, username: u.username, avatarColor: u.avatarColor || "", avatarUrl: u.avatarUrl, status: u.status };
             newMap.set(u.id, user);
           });
           setOnlineUsers(newMap);

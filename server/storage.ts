@@ -17,6 +17,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserStatus(id: string, status: UserStatus): Promise<User | undefined>;
+  updateUserAvatar(id: string, avatarUrl: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   
   getChannels(): Promise<Channel[]>;
@@ -100,6 +101,15 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  async updateUserAvatar(id: string, avatarUrl: string): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (user) {
+      user.avatarUrl = avatarUrl;
+      this.users.set(id, user);
+    }
+    return user;
+  }
+
   async getAllUsers(): Promise<User[]> {
     return Array.from(this.users.values());
   }
@@ -151,6 +161,7 @@ export class MemStorage implements IStorage {
       userId: user.id,
       username: user.username,
       avatarColor: user.avatarColor,
+      avatarUrl: user.avatarUrl,
       timestamp: new Date().toISOString(),
       imageUrl: insertMessage.imageUrl,
       videoUrl: insertMessage.videoUrl,
@@ -183,6 +194,7 @@ export class MemStorage implements IStorage {
       userId: user.id,
       username: user.username,
       avatarColor: user.avatarColor,
+      avatarUrl: user.avatarUrl,
       timestamp: new Date().toISOString(),
     };
     
@@ -208,6 +220,7 @@ export class MemStorage implements IStorage {
           odId: user.id,
           username: user.username,
           avatarColor: user.avatarColor,
+          avatarUrl: user.avatarUrl,
           status: user.status,
         });
       }

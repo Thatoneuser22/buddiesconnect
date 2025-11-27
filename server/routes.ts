@@ -103,6 +103,22 @@ export async function registerRoutes(
     res.json({ url });
   });
 
+  app.post("/api/upload/avatar", storage_multer.single("file"), async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const userId = req.headers["x-user-id"] as string;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const url = `/uploads/${req.file.filename}`;
+    const user = await storage.updateUserAvatar(userId, url);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ user });
+  });
+
   app.post("/api/upload/video", storage_multer.single("file"), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -141,7 +157,7 @@ export async function registerRoutes(
               const allUsers = await storage.getAllUsers();
               const onlineUsers = allUsers
                 .filter(u => clients.has(u.id))
-                .map(u => ({ id: u.id, username: u.username, status: u.status }));
+                .map(u => ({ id: u.id, username: u.username, avatarColor: u.avatarColor, avatarUrl: u.avatarUrl, status: u.status }));
               
               broadcast({ type: "users_online", users: onlineUsers });
             }

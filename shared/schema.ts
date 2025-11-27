@@ -7,12 +7,14 @@ export const users = {
   id: "",
   username: "",
   avatarColor: "",
+  avatarUrl: "",
   status: "offline" as UserStatus,
 };
 
 export const insertUserSchema = z.object({
   username: z.string().min(2).max(32),
   avatarColor: z.string().optional(),
+  avatarUrl: z.string().optional(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -20,6 +22,7 @@ export type User = {
   id: string;
   username: string;
   avatarColor: string;
+  avatarUrl?: string;
   status: UserStatus;
 };
 
@@ -57,6 +60,7 @@ export type Message = {
   userId: string;
   username: string;
   avatarColor: string;
+  avatarUrl?: string;
   timestamp: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -86,6 +90,7 @@ export type Friend = {
   odId: string;
   username: string;
   avatarColor: string;
+  avatarUrl?: string;
   status: UserStatus;
 };
 
@@ -93,6 +98,7 @@ export type DirectMessage = {
   odId: string;
   odUsername: string;
   odAvatarColor: string;
+  odAvatarUrl?: string;
   odStatus: UserStatus;
   lastMessage?: string;
   lastMessageTime?: string;
@@ -115,4 +121,4 @@ export type WebSocketMessage =
   | { type: "friend_request"; request: FriendRequest }
   | { type: "friend_accepted"; friend: Friend }
   | { type: "dm_message"; message: Message; odId: string }
-  | { type: "users_online"; users: { id: string; status: UserStatus }[] };
+  | { type: "users_online"; users: { id: string; username: string; avatarColor: string; avatarUrl?: string; status: UserStatus }[] };

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useChat } from "@/lib/chatContext";
 import { format } from "date-fns";
 import { Reply, Download } from "lucide-react";
@@ -82,9 +83,18 @@ export function MessageFeed() {
                   className={`hover:bg-background/50 px-4 py-1 rounded transition ${
                     isFirstInGroup ? "pt-2" : ""
                   } ${isLastInGroup ? "pb-2" : ""}`}
+                  data-testid={`message-item-${message.id}`}
                 >
                   {isFirstInGroup && (
                     <div className="flex items-center gap-2 mb-1">
+                      <Avatar className="h-6 w-6">
+                        {message.avatarUrl ? (
+                          <AvatarImage src={message.avatarUrl} alt={message.username} />
+                        ) : null}
+                        <AvatarFallback style={{ backgroundColor: message.avatarColor }} className="text-xs">
+                          {message.username.split(" ").map(n => n[0]).join("").toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="font-semibold text-sm">{message.username}</span>
                       <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
                     </div>
