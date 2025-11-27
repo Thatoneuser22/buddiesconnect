@@ -13,9 +13,7 @@ interface ConnectedClient {
 const clients: Map<string, ConnectedClient> = new Map();
 
 const BAD_WORDS = [
-  "f***", "s***", "b****", "h***", "d***", "c***", "a**", "p***",
-  "motherf***er", "goddamn", "dammit", "ass", "bitch", "shit", "fuck", "crap",
-  "damn", "hell", "piss", "suck", "wank", "twat", "bollocks"
+  "rape", "rapist", "pedo", "pedophile", "child abuse", "kill yourself", "kys"
 ];
 
 function containsBadWords(text: string): boolean {
