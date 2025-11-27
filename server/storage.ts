@@ -15,7 +15,6 @@ const AVATAR_COLORS = [
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  verifyPassword(username: string, password: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserStatus(id: string, status: UserStatus): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
@@ -75,23 +74,14 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const existingUser = await this.getUserByUsername(insertUser.username);
-    if (existingUser) {
-      throw new Error("Username already taken");
-    }
-    
     const id = randomUUID();
     const avatarColor = insertUser.avatarColor || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-    
-    // Simple password hash (in production, use bcrypt)
-    const passwordHash = Buffer.from(insertUser.password).toString('base64');
     
     const user: User = { 
       id, 
       username: insertUser.username,
       avatarColor,
-      status: "online",
-      passwordHash
+      status: "online"
     };
     this.users.set(id, user);
     this.friendships.set(id, new Set());
@@ -111,16 +101,6 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values());
   }
 
-  async verifyPassword(username: string, password: string): Promise<User | undefined> {
-    const user = await this.getUserByUsername(username);
-    if (!user || !user.passwordHash) return undefined;
-    
-    const passwordHash = Buffer.from(password).toString('base64');
-    if (passwordHash === user.passwordHash) {
-      return user;
-    }
-    return undefined;
-  }
 
   async getChannels(): Promise<Channel[]> {
     return Array.from(this.channels.values());

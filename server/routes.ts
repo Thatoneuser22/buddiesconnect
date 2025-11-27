@@ -132,26 +132,7 @@ export async function registerRoutes(
       res.json(user);
     } catch (error) {
       console.error("Create user error:", error);
-      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid user data" });
-    }
-  });
-
-  app.post("/api/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      if (!username || !password) {
-        return res.status(400).json({ error: "Username and password required" });
-      }
-
-      const user = await storage.verifyPassword(username, password);
-      if (!user) {
-        return res.status(401).json({ error: "Invalid username or password" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(400).json({ error: "Login failed" });
+      res.status(400).json({ error: "Invalid user data" });
     }
   });
 
