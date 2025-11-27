@@ -8,13 +8,11 @@ interface CustomVideoPlayerProps {
 
 export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const hideControlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -25,37 +23,36 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     const handleTimeUpdate = () => setCurrentTime(video.currentTime);
     const handleLoadedMetadata = () => setDuration(video.duration);
     const handleEnded = () => setIsPlaying(false);
-    
-    const handleFullscreenChange = () => {
-      const isCurrentlyFullscreen = !!document.fullscreenElement;
-      setIsFullscreen(isCurrentlyFullscreen);
-      if (isCurrentlyFullscreen) {
-        setShowControls(true);
-      }
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
+    video.addEventListener("ended", handleEnded);
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+
+    return () => {
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("ended", handleEnded);
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
     };
-    
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isFullscreen) return;
+      if (document.fullscreenElement !== videoRef.current) return;
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
       }
     };
 
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("ended", handleEnded);
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("ended", handleEnded);
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isFullscreen]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isPlaying]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -64,7 +61,6 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
       } else {
         videoRef.current.play();
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -98,9 +94,10 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   const toggleFullscreen = () => {
-    if (containerRef.current) {
-      if (!isFullscreen) {
-        containerRef.current.requestFullscreen().catch(err => console.error(err));
+    if (videoRef.current) {
+      if (!document.fullscreenElement) {
+        videoRef.current.requestFullscreen().catch(err => console.error(err));
+        setShowControls(true);
       } else {
         document.exitFullscreen();
       }
@@ -112,7 +109,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     if (hideControlsTimeoutRef.current) {
       clearTimeout(hideControlsTimeoutRef.current);
     }
-    if (isFullscreen && isPlaying) {
+    if (document.fullscreenElement === videoRef.current && isPlaying) {
       hideControlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
       }, 3000);
@@ -136,10 +133,10 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden" onMouseMove={handleMouseMove}>
-      {!isFullscreen && <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>}
+    <div className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden">
+      <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>
       
-      <div className="relative bg-black group">
+      <div className="relative bg-black group" onMouseMove={handleMouseMove}>
         <video
           ref={videoRef}
           src={src}
@@ -147,70 +144,80 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
           onClick={togglePlay}
         />
 
-        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition ${
-          isFullscreen ? (showControls ? "opacity-100" : "opacity-0") : "opacity-0 group-hover:opacity-100"
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-between p-3 transition-opacity duration-300 ${
+          showControls ? "opacity-100" : "opacity-0"
         }`}>
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={currentTime}
-            onChange={handleProgressChange}
-            className="w-full h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500 mb-2"
-          />
+          {/* Top - Title in fullscreen */}
+          {document.fullscreenElement === videoRef.current && (
+            <div className="flex-shrink-0">
+              <p className="text-sm font-semibold text-white">{title}</p>
+            </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={togglePlay}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-purple-500 hover:bg-purple-600 rounded-full transition"
-            >
-              {isPlaying ? (
-                <Pause className="w-4 h-4 text-white" />
-              ) : (
-                <Play className="w-4 h-4 text-white ml-0.5" />
-              )}
-            </button>
-
-            <span className="text-xs text-purple-300 whitespace-nowrap">{formatTime(currentTime)}</span>
-            <span className="text-xs text-purple-300">/</span>
-            <span className="text-xs text-purple-300 whitespace-nowrap">{formatTime(duration)}</span>
-
-            <div className="flex-1" />
-
-            <button
-              onClick={toggleMute}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4 text-purple-300" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-purple-300" />
-              )}
-            </button>
-
+          {/* Bottom - Controls */}
+          <div className="flex-shrink-0 space-y-2">
             <input
               type="range"
               min="0"
-              max="1"
-              step="0.1"
-              value={isMuted ? 0 : volume}
-              onChange={handleVolumeChange}
-              className="w-12 h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              max={duration || 0}
+              value={currentTime}
+              onChange={handleProgressChange}
+              className="w-full h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500"
             />
 
-            <button
-              onClick={toggleFullscreen}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
-            >
-              <Maximize className="w-4 h-4 text-purple-300" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={togglePlay}
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-purple-500 hover:bg-purple-600 rounded-full transition"
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 text-white" />
+                ) : (
+                  <Play className="w-4 h-4 text-white ml-0.5" />
+                )}
+              </button>
 
-            <button
-              onClick={handleDownload}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
-            >
-              <Download className="w-4 h-4 text-purple-300" />
-            </button>
+              <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(currentTime)}</span>
+              <span className="text-xs text-purple-200">/</span>
+              <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(duration)}</span>
+
+              <div className="flex-1" />
+
+              <button
+                onClick={toggleMute}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 text-purple-200" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-purple-200" />
+                )}
+              </button>
+
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={isMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="w-12 h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              />
+
+              <button
+                onClick={toggleFullscreen}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
+              >
+                <Maximize className="w-4 h-4 text-purple-200" />
+              </button>
+
+              <button
+                onClick={handleDownload}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
+              >
+                <Download className="w-4 h-4 text-purple-200" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
