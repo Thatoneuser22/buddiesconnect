@@ -92,7 +92,8 @@ export async function registerRoutes(
       return res.status(400).json({ error: "No file uploaded" });
     }
     const url = `/uploads/${req.file.filename}`;
-    res.json({ url });
+    const name = req.file.originalname;
+    res.json({ url, name });
   });
 
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });

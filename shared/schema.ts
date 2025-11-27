@@ -61,6 +61,7 @@ export type Message = {
   imageUrl?: string;
   videoUrl?: string;
   audioUrl?: string;
+  audioName?: string;
   replyToId?: string;
   replyTo?: Message;
 };

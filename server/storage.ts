@@ -144,6 +144,7 @@ export class MemStorage implements IStorage {
       imageUrl: insertMessage.imageUrl,
       videoUrl: insertMessage.videoUrl,
       audioUrl: insertMessage.audioUrl,
+      audioName: (insertMessage as any).audioName,
       replyToId: insertMessage.replyToId,
     };
     if (insertMessage.replyToId) {

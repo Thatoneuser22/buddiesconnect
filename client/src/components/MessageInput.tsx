@@ -9,6 +9,7 @@ export function MessageInput() {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [audioUrl, setAudioUrl] = useState<string>("");
+  const [audioName, setAudioName] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,11 +28,25 @@ export function MessageInput() {
     if (!content.trim() && !imageUrl && !videoUrl && !audioUrl) return;
     if (!activeChannel) return;
 
+    // Pass audio info as extended message data
+    if (audioUrl) {
+      const messageData = {
+        content: content.trim(),
+        imageUrl,
+        videoUrl,
+        audioUrl,
+        audioName,
+        replyToId: replyingTo?.id,
+      };
+      (window as any)._pendingAudioData = messageData;
+    }
+    
     sendMessage(content.trim(), imageUrl, videoUrl, audioUrl, replyingTo?.id);
     setContent("");
     setImageUrl("");
     setVideoUrl("");
     setAudioUrl("");
+    setAudioName("");
     setReplyingTo(null);
   };
 
@@ -76,6 +91,7 @@ export function MessageInput() {
       
       if (file.type.startsWith("audio/")) {
         setAudioUrl(data.url);
+        setAudioName(data.name);
       } else if (file.type.startsWith("video/")) {
         setVideoUrl(data.url);
       } else {
@@ -125,8 +141,11 @@ export function MessageInput() {
           )}
           {audioUrl && (
             <div className="relative w-fit">
-              <audio src={audioUrl} controls className="h-8" />
-              <button onClick={() => setAudioUrl("")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
+              <div className="p-2 bg-secondary rounded flex items-center gap-2">
+                <span className="text-xs text-muted-foreground truncate max-w-xs">{audioName}</span>
+                <audio src={audioUrl} controls className="h-6" />
+              </div>
+              <button onClick={() => { setAudioUrl(""); setAudioName(""); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
                 <X className="w-3 h-3" />
               </button>
             </div>
