@@ -20,7 +20,7 @@ interface ChatContextType {
   setDirectMessages: (dms: DirectMessage[]) => void;
   typingUsers: TypingUser[];
   onlineUsers: Map<string, UserStatus>;
-  sendMessage: (content: string, imageUrl?: string) => void;
+  sendMessage: (content: string, imageUrl?: string, videoUrl?: string) => void;
   sendTypingStart: () => void;
   sendTypingStop: () => void;
   isConnected: boolean;
@@ -164,12 +164,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUser, addMessage, activeDM]);
 
-  const sendMessage = useCallback((content: string, imageUrl?: string) => {
+  const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string) => {
     if (!wsRef.current || !currentUser) return;
     
     const messageData = activeDM 
-      ? { type: "dm_message", content, toUserId: activeDM, imageUrl }
-      : { type: "message", content, channelId: activeChannel?.id, imageUrl };
+      ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl }
+      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl };
     
     wsRef.current.send(JSON.stringify(messageData));
   }, [currentUser, activeChannel, activeDM]);

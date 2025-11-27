@@ -7,9 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 export function MessageInput() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [videoUrl, setVideoUrl] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sendMessage, activeChannel, activeDM, isConnected } = useChat();
+  const { sendMessage, activeChannel } = useChat();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -21,20 +22,29 @@ export function MessageInput() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() && !imageUrl) return;
-    if (!activeChannel && !activeDM) return;
+    if (!content.trim() && !imageUrl && !videoUrl) return;
+    if (!activeChannel) return;
 
-    sendMessage(content.trim(), imageUrl);
+    sendMessage(content.trim(), imageUrl, videoUrl);
     setContent("");
     setImageUrl("");
+    setVideoUrl("");
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max 5MB", variant: "destructive" });
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 50MB", variant: "destructive" });
+      return;
+    }
+
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
+    if (!isVideo && !isImage) {
+      toast({ title: "Invalid file", description: "Only images and videos allowed", variant: "destructive" });
       return;
     }
 
@@ -42,13 +52,17 @@ export function MessageInput() {
     reader.onload = (event) => {
       const result = event.target?.result;
       if (typeof result === "string") {
-        setImageUrl(result);
+        if (isVideo) {
+          setVideoUrl(result);
+        } else {
+          setImageUrl(result);
+        }
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const isDisabled = !activeChannel && !activeDM;
+  const isDisabled = !activeChannel;
 
   return (
     <div className="border-t p-3 bg-background">
@@ -61,8 +75,17 @@ export function MessageInput() {
         </div>
       )}
 
+      {videoUrl && (
+        <div className="mb-3 relative w-fit">
+          <video src={videoUrl} className="h-20 rounded" controls={false} />
+          <button onClick={() => setVideoUrl("")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+        <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
         <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isDisabled}>
           <Paperclip className="w-5 h-5" />
         </Button>
@@ -83,7 +106,7 @@ export function MessageInput() {
           className="flex-1 resize-none p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 bg-black text-white placeholder-gray-400"
         />
 
-        <Button type="submit" disabled={(!content.trim() && !imageUrl) || isDisabled}>
+        <Button type="submit" disabled={(!content.trim() && !imageUrl && !videoUrl) || isDisabled}>
           <Send className="w-4 h-4" />
         </Button>
       </form>
