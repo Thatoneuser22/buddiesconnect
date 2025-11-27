@@ -90,23 +90,24 @@ export function MessageFeed() {
   };
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-2 sm:p-4 space-y-1">
-        {groupedMessages.map((group, groupIdx) => (
-          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
-            {group.messages.map((message, msgIdx) => {
-              const isFirstInGroup = msgIdx === 0;
-              const isLastInGroup = msgIdx === group.messages.length - 1;
+    <div className="flex-1 flex flex-col relative">
+      <ScrollArea className="flex-1">
+        <div className="p-2 sm:p-4 space-y-1">
+          {groupedMessages.map((group, groupIdx) => (
+            <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
+              {group.messages.map((message, msgIdx) => {
+                const isFirstInGroup = msgIdx === 0;
+                const isLastInGroup = msgIdx === group.messages.length - 1;
 
-              return (
-                <div
-                  key={message.id}
-                  className={`hover:bg-background/50 px-2 sm:px-4 py-1 rounded transition ${
-                    isFirstInGroup ? "pt-1 sm:pt-2" : ""
-                  } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
-                  data-testid={`message-item-${message.id}`}
-                  onContextMenu={(e) => handleContextMenu(e, message)}
-                >
+                return (
+                  <div
+                    key={message.id}
+                    className={`hover:bg-background/50 px-2 sm:px-4 py-1 rounded transition ${
+                      isFirstInGroup ? "pt-1 sm:pt-2" : ""
+                    } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
+                    data-testid={`message-item-${message.id}`}
+                    onContextMenu={(e) => handleContextMenu(e, message)}
+                  >
                   {isFirstInGroup && (
                     <div className="flex items-center gap-1 sm:gap-2 mb-1">
                       <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
@@ -202,8 +203,9 @@ export function MessageFeed() {
           </div>
         )}
 
-        <div ref={bottomRef} />
-      </div>
+          <div ref={bottomRef} />
+        </div>
+      </ScrollArea>
 
       {contextMenu && (
         <div
@@ -242,6 +244,6 @@ export function MessageFeed() {
           )}
         </div>
       )}
-    </ScrollArea>
+    </div>
   );
 }
