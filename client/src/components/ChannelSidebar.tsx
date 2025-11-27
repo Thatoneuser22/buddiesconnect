@@ -18,10 +18,6 @@ export function ChannelSidebar() {
 
   return (
     <div className="w-64 flex flex-col border-r h-full">
-      <div className="p-4 border-b">
-        <h1 className="font-bold text-lg">ChatterBox</h1>
-      </div>
-
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
           {generalChannel && (
