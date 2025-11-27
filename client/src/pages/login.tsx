@@ -17,6 +17,7 @@ const AVATAR_COLORS = [
 
 export default function Login() {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   const { setCurrentUser, setChannels } = useChat();
@@ -33,10 +34,18 @@ export default function Login() {
       return;
     }
 
+    if (!password || password.length < 6) {
+      toast({
+        title: "Invalid password",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-      const user = await apiRequest<User>("POST", "/api/users", { username: username.trim(), avatarColor });
+      const user = await apiRequest<User>("POST", "/api/login", { username: username.trim(), password });
       
       setCurrentUserId(user.id);
       setCurrentUser(user);
@@ -49,7 +58,7 @@ export default function Login() {
       setLocation("/chat");
     } catch (error: unknown) {
       toast({
-        title: "Failed to join",
+        title: "Failed to sign in",
         description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
@@ -91,10 +100,21 @@ export default function Login() {
                   data-testid="input-username"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  data-testid="input-password"
+                />
+              </div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !username.trim()}
+                disabled={isLoading || !username.trim() || !password}
                 data-testid="button-join"
               >
                 {isLoading ? "Signing in..." : "Sign In"}

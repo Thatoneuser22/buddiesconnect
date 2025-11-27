@@ -12,6 +12,7 @@ export const users = {
 
 export const insertUserSchema = z.object({
   username: z.string().min(2).max(32),
+  password: z.string().min(6).max(128),
   avatarColor: z.string().optional(),
 });
 
@@ -21,6 +22,7 @@ export type User = {
   username: string;
   avatarColor: string;
   status: UserStatus;
+  passwordHash?: string;
 };
 
 export const channelTypeEnum = z.enum(["text", "voice"]);

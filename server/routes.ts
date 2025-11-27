@@ -128,18 +128,30 @@ export async function registerRoutes(
   app.post("/api/users", async (req, res) => {
     try {
       const validated = insertUserSchema.parse(req.body);
-      
-      const existingUser = await storage.getUserByUsername(validated.username);
-      if (existingUser) {
-        existingUser.status = "online";
-        return res.json(existingUser);
-      }
-      
       const user = await storage.createUser(validated);
       res.json(user);
     } catch (error) {
       console.error("Create user error:", error);
-      res.status(400).json({ error: "Invalid user data" });
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid user data" });
+    }
+  });
+
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+
+      const user = await storage.verifyPassword(username, password);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(400).json({ error: "Login failed" });
     }
   });
 

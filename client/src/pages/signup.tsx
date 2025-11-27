@@ -17,6 +17,8 @@ const AVATAR_COLORS = [
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   const { setCurrentUser, setChannels } = useChat();
@@ -33,10 +35,28 @@ export default function SignUp() {
       return;
     }
 
+    if (!password || password.length < 6) {
+      toast({
+        title: "Invalid password",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-      const user = await apiRequest<User>("POST", "/api/users", { username: username.trim(), avatarColor });
+      const user = await apiRequest<User>("POST", "/api/users", { username: username.trim(), password, avatarColor });
       
       setCurrentUserId(user.id);
       setCurrentUser(user);
@@ -91,10 +111,32 @@ export default function SignUp() {
                   data-testid="input-signup-username"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  data-testid="input-signup-password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  data-testid="input-confirm-password"
+                />
+              </div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !username.trim()}
+                disabled={isLoading || !username.trim() || !password || !confirmPassword}
                 data-testid="button-signup"
               >
                 {isLoading ? "Creating..." : "Create Account"}
