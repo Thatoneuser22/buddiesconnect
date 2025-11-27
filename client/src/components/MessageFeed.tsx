@@ -23,6 +23,15 @@ export function MessageFeed() {
     );
   }
 
+  const isLink = (text: string) => {
+    try {
+      new URL(text);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   return (
     <ScrollArea className="flex-1">
       <div className="p-4 space-y-4">
@@ -33,12 +42,17 @@ export function MessageFeed() {
                 <span className="font-semibold text-sm">{message.username}</span>
                 <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
               </div>
-              <p className="text-sm">{message.content}</p>
+              <p className="text-sm">
+                {isLink(message.content) ? (
+                  <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                    {message.content}
+                  </a>
+                ) : (
+                  message.content
+                )}
+              </p>
               {message.imageUrl && (
                 <img src={message.imageUrl} alt="attachment" className="mt-2 max-w-xs rounded max-h-64 object-cover" />
-              )}
-              {message.videoUrl && (
-                <video src={message.videoUrl} controls className="mt-2 max-w-xs rounded max-h-64" />
               )}
             </div>
           </div>
