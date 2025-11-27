@@ -25,6 +25,30 @@ function containsBadWords(text: string): boolean {
   return BAD_WORDS.some(word => lowerText.includes(word));
 }
 
+function isSpam(text: string): boolean {
+  if (text.length < 3) return false;
+  
+  // Check for repeated characters (more than 4 in a row)
+  if (/(.)\1{4,}/.test(text)) return true;
+  
+  // Check for all caps with symbols/numbers (SPAM!!! or A1A1A1)
+  const capsWithSymbols = /^[A-Z0-9\s!?@#$%^&*()]{3,}$/.test(text);
+  const allCapsCount = (text.match(/[A-Z]/g) || []).length;
+  if (capsWithSymbols && allCapsCount > text.length * 0.6) return true;
+  
+  // Check for repeated short patterns (abcabcabc)
+  for (let len = 1; len <= Math.floor(text.length / 3); len++) {
+    const pattern = text.substring(0, len);
+    let count = 0;
+    for (let i = 0; i < text.length; i += len) {
+      if (text.substring(i, i + len) === pattern) count++;
+    }
+    if (count >= 4) return true;
+  }
+  
+  return false;
+}
+
 function broadcast(message: object, excludeUserId?: string) {
   const data = JSON.stringify(message);
   clients.forEach((client) => {
@@ -130,7 +154,7 @@ export async function registerRoutes(
             if (!odId) return;
             
             const content = message.content || "";
-            if (containsBadWords(content)) {
+            if (containsBadWords(content) || isSpam(content)) {
               return;
             }
             

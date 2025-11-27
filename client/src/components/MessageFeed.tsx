@@ -73,7 +73,7 @@ export function MessageFeed() {
                   <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
                 </div>
                 {message.content && (
-                  <p className="text-sm">
+                  <p className="text-sm break-words whitespace-pre-wrap max-w-md">
                     {isLink(message.content) ? (
                       isSafeLink(message.content) ? (
                         <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
