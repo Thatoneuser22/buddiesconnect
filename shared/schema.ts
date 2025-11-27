@@ -43,6 +43,7 @@ export type Channel = {
 export const insertMessageSchema = z.object({
   content: z.string().min(1).max(2000),
   channelId: z.string(),
+  imageUrl: z.string().optional(),
 });
 
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
@@ -54,6 +55,7 @@ export type Message = {
   username: string;
   avatarColor: string;
   timestamp: string;
+  imageUrl?: string;
 };
 
 export const insertFriendRequestSchema = z.object({

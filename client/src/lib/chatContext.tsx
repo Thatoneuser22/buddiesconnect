@@ -20,7 +20,7 @@ interface ChatContextType {
   setDirectMessages: (dms: DirectMessage[]) => void;
   typingUsers: TypingUser[];
   onlineUsers: Map<string, UserStatus>;
-  sendMessage: (content: string) => void;
+  sendMessage: (content: string, imageUrl?: string) => void;
   sendTypingStart: () => void;
   sendTypingStop: () => void;
   isConnected: boolean;

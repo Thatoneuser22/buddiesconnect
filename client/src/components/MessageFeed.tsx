@@ -72,6 +72,13 @@ function MessageItem({ message, isGrouped, index }: MessageItemProps) {
         <p className="text-sm leading-relaxed break-words" data-testid={`text-message-content-${message.id}`}>
           {message.content}
         </p>
+        {message.imageUrl && (
+          <img 
+            src={message.imageUrl} 
+            alt="Message attachment" 
+            className="mt-2 max-w-xs rounded-md max-h-96 object-cover"
+          />
+        )}
       </motion.div>
     );
   }
@@ -102,6 +109,13 @@ function MessageItem({ message, isGrouped, index }: MessageItemProps) {
         <p className="text-sm leading-relaxed break-words" data-testid={`text-message-content-${message.id}`}>
           {message.content}
         </p>
+        {message.imageUrl && (
+          <img 
+            src={message.imageUrl} 
+            alt="Message attachment" 
+            className="mt-2 max-w-xs rounded-md max-h-96 object-cover"
+          />
+        )}
       </div>
     </motion.div>
   );
@@ -172,22 +186,20 @@ export function MessageFeed() {
             )}
           </div>
 
-          <AnimatePresence>
-            <div className="space-y-0">
-              {displayMessages.map((message, index) => {
-                const previousMessage = index > 0 ? displayMessages[index - 1] : null;
-                const isGrouped = shouldGroupMessages(message, previousMessage);
-                return (
-                  <MessageItem
-                    key={message.id}
-                    message={message}
-                    isGrouped={isGrouped}
-                    index={index}
-                  />
-                );
-              })}
-            </div>
-          </AnimatePresence>
+          <div className="space-y-0">
+            {displayMessages.map((message, index) => {
+              const previousMessage = index > 0 ? displayMessages[index - 1] : null;
+              const isGrouped = shouldGroupMessages(message, previousMessage);
+              return (
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  isGrouped={isGrouped}
+                  index={index}
+                />
+              );
+            })}
+          </div>
 
           <AnimatePresence>
             {channelTypingUsers.length > 0 && (

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useChat } from "@/lib/chatContext";
 import { apiRequest, queryClient, setCurrentUserId } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Users, Hash, Zap } from "lucide-react";
+import { MessageSquare, ArrowLeft } from "lucide-react";
 import type { User, Channel } from "@shared/schema";
 
 const AVATAR_COLORS = [
@@ -15,7 +15,7 @@ const AVATAR_COLORS = [
   "#9B59B6", "#3498DB", "#1ABC9C", "#E91E63", "#FF9800"
 ];
 
-export default function Login() {
+export default function SignUp() {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
@@ -49,7 +49,7 @@ export default function Login() {
       setLocation("/chat");
     } catch (error: unknown) {
       toast({
-        title: "Failed to join",
+        title: "Failed to create account",
         description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
@@ -66,14 +66,14 @@ export default function Login() {
             <MessageSquare className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">ChatterBox</h1>
-          <p className="text-muted-foreground mt-2">Chat with your friends in real-time</p>
+          <p className="text-muted-foreground mt-2">Create your account to start chatting</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
+            <CardTitle>Create Account</CardTitle>
             <CardDescription>
-              Enter a username to start chatting
+              Choose a unique username to get started
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -83,50 +83,36 @@ export default function Login() {
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your username"
+                  placeholder="Choose your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   maxLength={32}
                   autoFocus
-                  data-testid="input-username"
+                  data-testid="input-signup-username"
                 />
               </div>
               <Button
                 type="submit"
                 className="w-full"
                 disabled={isLoading || !username.trim()}
-                data-testid="button-join"
+                data-testid="button-signup"
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Creating..." : "Create Account"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <div className="mt-4 text-center">
-          <p className="text-sm text-muted-foreground">Don't have an account?</p>
           <Button
-            variant="link"
-            onClick={() => setLocation("/signup")}
-            data-testid="button-go-signup"
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="gap-2"
+            data-testid="button-back-to-signin"
           >
-            Create one now
+            <ArrowLeft className="w-4 h-4" />
+            Back to Sign In
           </Button>
-        </div>
-
-        <div className="mt-8 grid grid-cols-3 gap-4">
-          <div className="text-center p-4 rounded-lg bg-card">
-            <Hash className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Channels</p>
-          </div>
-          <div className="text-center p-4 rounded-lg bg-card">
-            <Users className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Friends</p>
-          </div>
-          <div className="text-center p-4 rounded-lg bg-card">
-            <Zap className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Real-time</p>
-          </div>
         </div>
       </div>
     </div>

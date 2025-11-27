@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatProvider } from "@/lib/chatContext";
 import Login from "@/pages/login";
+import SignUp from "@/pages/signup";
 import Chat from "@/pages/chat";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
@@ -13,6 +14,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Login} />
+      <Route path="/signup" component={SignUp} />
       <Route path="/chat" component={Chat} />
       <Route component={NotFound} />
     </Switch>
