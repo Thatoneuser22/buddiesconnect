@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useChat } from "@/lib/chatContext";
@@ -13,6 +13,8 @@ export function MessageFeed() {
   const { messages, activeChannel, setReplyingTo, typingUsers } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; message: Message } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const downloadFile = (url: string, filename: string) => {
     const link = document.createElement("a");
@@ -21,7 +23,26 @@ export function MessageFeed() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setContextMenu(null);
   };
+
+  const handleContextMenu = (e: React.MouseEvent, message: Message) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, message });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+        setContextMenu(null);
+      }
+    };
+
+    if (contextMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [contextMenu]);
 
   const displayMessages = messages.filter(m => m.channelId === activeChannel?.id);
   
@@ -84,6 +105,7 @@ export function MessageFeed() {
                     isFirstInGroup ? "pt-1 sm:pt-2" : ""
                   } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
                   data-testid={`message-item-${message.id}`}
+                  onContextMenu={(e) => handleContextMenu(e, message)}
                 >
                   {isFirstInGroup && (
                     <div className="flex items-center gap-1 sm:gap-2 mb-1">
@@ -182,6 +204,44 @@ export function MessageFeed() {
 
         <div ref={bottomRef} />
       </div>
+
+      {contextMenu && (
+        <div
+          ref={contextMenuRef}
+          className="fixed bg-popover border border-border rounded-md shadow-md z-50 py-1 min-w-[120px]"
+          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+        >
+          <button
+            onClick={() => {
+              setReplyingTo(contextMenu.message);
+              setContextMenu(null);
+            }}
+            className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 transition"
+            data-testid="context-menu-reply"
+          >
+            <Reply className="w-3 h-3" />
+            Reply
+          </button>
+
+          {(contextMenu.message.imageUrl || contextMenu.message.videoUrl || contextMenu.message.audioUrl) && (
+            <button
+              onClick={() => {
+                const isImage = contextMenu.message.imageUrl;
+                const isVideo = contextMenu.message.videoUrl;
+                const isAudio = contextMenu.message.audioUrl;
+                const url = isImage ? contextMenu.message.imageUrl! : isVideo ? contextMenu.message.videoUrl! : contextMenu.message.audioUrl!;
+                const filename = isImage ? "image.jpg" : isVideo ? contextMenu.message.videoName || "video.mp4" : contextMenu.message.audioName || "audio.mp3";
+                downloadFile(url, filename);
+              }}
+              className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 transition"
+              data-testid="context-menu-download"
+            >
+              <Download className="w-3 h-3" />
+              Download
+            </button>
+          )}
+        </div>
+      )}
     </ScrollArea>
   );
 }
