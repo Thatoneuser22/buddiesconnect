@@ -9,8 +9,9 @@ import { CustomVideoPlayer } from "./CustomVideoPlayer";
 import type { Message } from "@shared/schema";
 
 export function MessageFeed() {
-  const { messages, activeChannel, setReplyingTo } = useChat();
+  const { messages, activeChannel, setReplyingTo, typingUsers } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const downloadFile = (url: string, filename: string) => {
     const link = document.createElement("a");
@@ -20,13 +21,24 @@ export function MessageFeed() {
     link.click();
     document.body.removeChild(link);
   };
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   const displayMessages = messages.filter(m => m.channelId === activeChannel?.id);
+  
+  // Group messages by user
+  const groupedMessages = displayMessages.reduce((acc: { user: string; messages: Message[] }[], msg) => {
+    if (acc.length === 0 || acc[acc.length - 1].user !== msg.username) {
+      acc.push({ user: msg.username, messages: [msg] });
+    } else {
+      acc[acc.length - 1].messages.push(msg);
+    }
+    return acc;
+  }, []);
+
+  const channelTypingUsers = typingUsers.filter(u => u.channelId === activeChannel?.id);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "auto" });
-  }, [displayMessages.length]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [displayMessages.length, channelTypingUsers.length]);
 
   if (!activeChannel) {
     return (
@@ -57,70 +69,107 @@ export function MessageFeed() {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-4 space-y-3">
-        {displayMessages.map((message) => (
-          <div key={message.id} className="group hover:bg-background/50 p-2 rounded transition">
-            {message.replyTo && (
-              <div className="text-xs mb-1 pl-3 border-l-2 border-muted-foreground text-muted-foreground">
-                <p className="font-semibold text-blue-500">{message.replyTo.username}</p>
-                <p className="truncate">{message.replyTo.content || "[media]"}</p>
-              </div>
-            )}
-            <div className="flex gap-3 items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">{message.username}</span>
-                  <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
-                </div>
-                {message.content && (
-                  <p className="text-sm break-words whitespace-pre-wrap max-w-md">
-                    {isLink(message.content) ? (
-                      isSafeLink(message.content) ? (
-                        <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                          {message.content}
-                        </a>
-                      ) : (
-                        <span className="text-gray-500 cursor-not-allowed">{message.content}</span>
-                      )
-                    ) : (
-                      message.content
+      <div className="p-4 space-y-6">
+        {groupedMessages.map((group, groupIdx) => (
+          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in">
+            {group.messages.map((message, msgIdx) => {
+              const isFirstInGroup = msgIdx === 0;
+              const isLastInGroup = msgIdx === group.messages.length - 1;
+
+              return (
+                <div
+                  key={message.id}
+                  className={`hover:bg-background/50 px-4 py-1 rounded transition ${
+                    isFirstInGroup ? "pt-2" : ""
+                  } ${isLastInGroup ? "pb-2" : ""}`}
+                >
+                  {isFirstInGroup && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-sm">{message.username}</span>
+                      <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
+                    </div>
+                  )}
+
+                  {message.replyTo && (
+                    <div className="text-xs mb-1 pl-3 border-l-2 border-muted-foreground text-muted-foreground mb-2">
+                      <p className="font-semibold text-blue-500">{message.replyTo.username}</p>
+                      <p className="truncate">{message.replyTo.content || "[media]"}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 items-start">
+                    <div className="flex-1 ml-0">
+                      {message.content && (
+                        <p className="text-sm break-words whitespace-pre-wrap max-w-xl">
+                          {isLink(message.content) ? (
+                            isSafeLink(message.content) ? (
+                              <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                                {message.content}
+                              </a>
+                            ) : (
+                              <span className="text-gray-500 cursor-not-allowed">{message.content}</span>
+                            )
+                          ) : (
+                            message.content
+                          )}
+                        </p>
+                      )}
+                      {message.imageUrl && (
+                        <div className="mt-2 relative w-fit group">
+                          <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-64 object-cover" />
+                          <button
+                            onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
+                            className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
+                          >
+                            <Download className="w-3 h-3" />
+                            Download
+                          </button>
+                        </div>
+                      )}
+                      {message.videoUrl && (
+                        <div className="mt-2 max-w-sm">
+                          <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
+                        </div>
+                      )}
+                      {message.audioUrl && (
+                        <div className="mt-2 max-w-sm">
+                          <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
+                        </div>
+                      )}
+                    </div>
+                    {isFirstInGroup && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="opacity-0 group-hover:opacity-100 transition h-8 w-8 flex-shrink-0"
+                        onClick={() => setReplyingTo(message)}
+                      >
+                        <Reply className="w-4 h-4" />
+                      </Button>
                     )}
-                  </p>
-                )}
-                {message.imageUrl && (
-                  <div className="mt-2 relative w-fit group">
-                    <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-64 object-cover" />
-                    <button
-                      onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
-                      className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
-                    >
-                      <Download className="w-3 h-3" />
-                      Download
-                    </button>
                   </div>
-                )}
-                {message.videoUrl && (
-                  <div className="mt-2 max-w-sm">
-                    <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
-                  </div>
-                )}
-                {message.audioUrl && (
-                  <div className="mt-2 max-w-sm">
-                    <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
-                  </div>
-                )}
-              </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="opacity-0 group-hover:opacity-100 transition h-8 w-8"
-                onClick={() => setReplyingTo(message)}
-              >
-                <Reply className="w-4 h-4" />
-              </Button>
-            </div>
+                </div>
+              );
+            })}
           </div>
         ))}
+
+        {channelTypingUsers.length > 0 && (
+          <div className="animate-message-slide-in">
+            <div className="text-sm text-muted-foreground">
+              {channelTypingUsers.map(u => u.username).join(", ")}{" "}
+              <span className="inline-flex items-center gap-1">
+                is typing
+                <span className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing"></span>
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing animation-delay-200"></span>
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing animation-delay-400"></span>
+                </span>
+              </span>
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
     </ScrollArea>
