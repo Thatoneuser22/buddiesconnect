@@ -70,9 +70,9 @@ export function MessageFeed() {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-4 space-y-1">
+      <div className="p-2 sm:p-4 space-y-1">
         {groupedMessages.map((group, groupIdx) => (
-          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-4">
+          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
             {group.messages.map((message, msgIdx) => {
               const isFirstInGroup = msgIdx === 0;
               const isLastInGroup = msgIdx === group.messages.length - 1;
@@ -80,14 +80,14 @@ export function MessageFeed() {
               return (
                 <div
                   key={message.id}
-                  className={`hover:bg-background/50 px-4 py-1 rounded transition ${
-                    isFirstInGroup ? "pt-2" : ""
-                  } ${isLastInGroup ? "pb-2" : ""}`}
+                  className={`hover:bg-background/50 px-2 sm:px-4 py-1 rounded transition ${
+                    isFirstInGroup ? "pt-1 sm:pt-2" : ""
+                  } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
                   data-testid={`message-item-${message.id}`}
                 >
                   {isFirstInGroup && (
-                    <div className="flex items-center gap-2 mb-1">
-                      <Avatar className="h-6 w-6">
+                    <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                      <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
                         {message.avatarUrl ? (
                           <AvatarImage src={message.avatarUrl} alt={message.username} />
                         ) : null}
@@ -95,22 +95,22 @@ export function MessageFeed() {
                           {message.username.split(" ").map(n => n[0]).join("").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-semibold text-sm">{message.username}</span>
+                      <span className="font-semibold text-xs sm:text-sm">{message.username}</span>
                       <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
                     </div>
                   )}
 
                   {message.replyTo && (
-                    <div className="text-xs mb-1 pl-3 border-l-2 border-muted-foreground text-muted-foreground mb-2">
-                      <p className="font-semibold text-blue-500">{message.replyTo.username}</p>
-                      <p className="truncate">{message.replyTo.content || "[media]"}</p>
+                    <div className="text-xs mb-1 pl-2 sm:pl-3 border-l-2 border-muted-foreground text-muted-foreground mb-2">
+                      <p className="font-semibold text-blue-500 text-xs sm:text-sm">{message.replyTo.username}</p>
+                      <p className="truncate text-xs">{message.replyTo.content || "[media]"}</p>
                     </div>
                   )}
 
-                  <div className="flex gap-3 items-start">
+                  <div className="flex gap-1 sm:gap-3 items-start">
                     <div className="flex-1 ml-0">
                       {message.content && (
-                        <p className="text-sm break-words whitespace-pre-wrap max-w-sm">
+                        <p className="text-xs sm:text-sm break-words whitespace-pre-wrap max-w-xs sm:max-w-sm">
                           {isLink(message.content) ? (
                             isSafeLink(message.content) ? (
                               <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
@@ -125,24 +125,24 @@ export function MessageFeed() {
                         </p>
                       )}
                       {message.imageUrl && (
-                        <div className="mt-2 relative w-fit group animate-fade-in">
-                          <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-64 object-cover" />
+                        <div className="mt-1 sm:mt-2 relative w-fit group animate-fade-in">
+                          <img src={message.imageUrl} alt="attachment" className="max-w-xs sm:max-w-sm rounded max-h-40 sm:max-h-64 object-cover" />
                           <button
                             onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
-                            className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
+                            className="absolute top-1 sm:top-2 right-1 sm:right-2 flex items-center gap-1 px-1 sm:px-2 py-0.5 sm:py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
                           >
                             <Download className="w-3 h-3" />
-                            Download
+                            <span className="hidden sm:inline">Download</span>
                           </button>
                         </div>
                       )}
                       {message.videoUrl && (
-                        <div className="mt-2 max-w-md animate-fade-in">
+                        <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
                           <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
                         </div>
                       )}
                       {message.audioUrl && (
-                        <div className="mt-2 max-w-md animate-fade-in">
+                        <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
                           <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
                         </div>
                       )}
@@ -151,10 +151,10 @@ export function MessageFeed() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="opacity-0 group-hover:opacity-100 transition h-8 w-8 flex-shrink-0"
+                        className="opacity-0 group-hover:opacity-100 transition h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
                         onClick={() => setReplyingTo(message)}
                       >
-                        <Reply className="w-4 h-4" />
+                        <Reply className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     )}
                   </div>
@@ -166,14 +166,14 @@ export function MessageFeed() {
 
         {channelTypingUsers.length > 0 && (
           <div className="animate-message-slide-in">
-            <div className="text-sm text-muted-foreground">
-              {channelTypingUsers.map(u => u.username).join(", ")}{" "}
-              <span className="inline-flex items-center gap-1">
+            <div className="text-xs sm:text-sm text-muted-foreground">
+              <span className="line-clamp-1">{channelTypingUsers.map(u => u.username).join(", ")}</span>{" "}
+              <span className="inline-flex items-center gap-0.5 sm:gap-1">
                 is typing
-                <span className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing"></span>
-                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing animation-delay-200"></span>
-                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing animation-delay-400"></span>
+                <span className="flex gap-0.5 sm:gap-1">
+                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-muted-foreground rounded-full animate-typing"></span>
+                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-muted-foreground rounded-full animate-typing animation-delay-200"></span>
+                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-muted-foreground rounded-full animate-typing animation-delay-400"></span>
                 </span>
               </span>
             </div>
