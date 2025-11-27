@@ -126,7 +126,7 @@ export function MessageInput() {
   const isDisabled = !activeChannel || isUploading;
 
   return (
-    <div className="border-t p-1.5 sm:p-3 bg-background animate-fade-in">
+    <div className="border-t p-2 sm:p-3 bg-background animate-fade-in">
       {replyingTo && (
         <div className="mb-1 sm:mb-2 p-0.5 sm:p-2 bg-secondary rounded flex items-center justify-between gap-1">
           <div className="text-xs min-w-0">

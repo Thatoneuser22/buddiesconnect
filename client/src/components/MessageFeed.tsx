@@ -100,9 +100,9 @@ export function MessageFeed() {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-1.5 sm:p-4 space-y-0.5 sm:space-y-1">
+      <div className="p-2 sm:p-4 space-y-1 sm:space-y-2">
         {groupedMessages.map((group, groupIdx) => (
-          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-1 sm:mb-4">
+          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
             {group.messages.map((message, msgIdx) => {
               const isFirstInGroup = msgIdx === 0;
               const isLastInGroup = msgIdx === group.messages.length - 1;
@@ -110,9 +110,9 @@ export function MessageFeed() {
               return (
                 <div
                   key={message.id}
-                  className={`hover:bg-background/50 px-1.5 sm:px-4 py-0.5 sm:py-1 rounded transition ${
-                    isFirstInGroup ? "pt-0.5 sm:pt-2" : ""
-                  } ${isLastInGroup ? "pb-0.5 sm:pb-2" : ""}`}
+                  className={`hover:bg-primary/5 px-2 sm:px-4 py-1 sm:py-1.5 rounded transition ${
+                    isFirstInGroup ? "pt-1 sm:pt-2" : ""
+                  } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
                   data-testid={`message-item-${message.id}`}
                   onContextMenu={(e) => handleContextMenu(e, message)}
                 >
@@ -141,7 +141,7 @@ export function MessageFeed() {
                   <div className="flex gap-0.5 sm:gap-3 items-start">
                     <div className="flex-1 ml-0 min-w-0">
                       {message.content && (
-                        <p className="text-xs break-words whitespace-pre-wrap max-w-xs">
+                        <p className="text-xs break-words whitespace-pre-wrap max-w-48 sm:max-w-sm">
                           {isLink(message.content) ? (
                             isSafeLink(message.content) ? (
                               <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
@@ -157,7 +157,7 @@ export function MessageFeed() {
                       )}
                       {message.imageUrl && (
                         <div className="mt-0.5 sm:mt-2 relative w-fit group animate-fade-in">
-                          <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-32 sm:max-h-64 object-cover" />
+                          <img src={message.imageUrl} alt="attachment" className="max-w-48 sm:max-w-sm rounded max-h-24 sm:max-h-64 object-cover" />
                           <button
                             onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
                             className="absolute top-0.5 sm:top-2 right-0.5 sm:right-2 flex items-center gap-1 px-1 sm:px-2 py-0.5 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
@@ -169,12 +169,12 @@ export function MessageFeed() {
                         </div>
                       )}
                       {message.videoUrl && (
-                        <div className="mt-0.5 sm:mt-2 max-w-xs animate-fade-in">
+                        <div className="mt-0.5 sm:mt-2 max-w-48 sm:max-w-sm animate-fade-in">
                           <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
                         </div>
                       )}
                       {message.audioUrl && (
-                        <div className="mt-0.5 sm:mt-2 max-w-xs animate-fade-in">
+                        <div className="mt-0.5 sm:mt-2 max-w-48 sm:max-w-sm animate-fade-in">
                           <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
                         </div>
                       )}
