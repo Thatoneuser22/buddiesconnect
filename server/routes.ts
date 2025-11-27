@@ -65,8 +65,9 @@ export async function registerRoutes(
             if (!odId) return;
             
             const validatedMessage = insertMessageSchema.parse({
-              content: message.content,
+              content: message.content || "",
               channelId: message.channelId,
+              imageUrl: message.imageUrl,
             });
             
             const newMessage = await storage.createMessage(odId, validatedMessage);
@@ -79,9 +80,9 @@ export async function registerRoutes(
             if (!odId) return;
             
             const toUserId = message.toUserId;
-            const content = message.content;
+            const content = (message.content || "") + (message.imageUrl ? `\n[Image]` : "");
             
-            if (!toUserId || !content) return;
+            if (!toUserId || !content.trim()) return;
             
             const newMessage = await storage.createDMMessage(odId, toUserId, content);
             

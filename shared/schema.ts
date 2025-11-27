@@ -41,10 +41,10 @@ export type Channel = {
 };
 
 export const insertMessageSchema = z.object({
-  content: z.string().min(1).max(2000),
+  content: z.string().max(2000),
   channelId: z.string(),
   imageUrl: z.string().optional(),
-});
+}).refine(obj => obj.content.trim() || obj.imageUrl, { message: "Must have content or image" });
 
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = {
