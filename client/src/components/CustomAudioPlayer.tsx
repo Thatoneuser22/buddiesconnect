@@ -134,27 +134,29 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-2 mb-2 sm:mb-0">
         <button
           onClick={togglePlay}
-          className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center hover:opacity-80 transition"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:opacity-80 transition"
         >
           {isPlaying ? (
-            <Pause className="w-3 h-3 sm:w-4 sm:h-4 text-blue-200" />
+            <Pause className="w-4 h-4 text-blue-200" />
           ) : (
-            <Play className="w-3 h-3 sm:w-4 sm:h-4 text-blue-200 ml-0.5" />
+            <Play className="w-4 h-4 text-blue-200 ml-0.5" />
           )}
         </button>
 
-        <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-xs text-blue-200 whitespace-nowrap hidden sm:inline">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max={duration || 0}
             value={currentTime}
             onChange={handleProgressChange}
-            className="flex-1 h-1 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
+            className="flex-1 h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
           />
+          <span className="text-xs text-blue-200 whitespace-nowrap hidden sm:inline">{formatTime(duration)}</span>
         </div>
 
         <button

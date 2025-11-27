@@ -78,16 +78,16 @@ export function AvatarUpload() {
     .toUpperCase();
 
   return (
-    <div className="flex items-center gap-3">
-      <Avatar className="h-10 w-10">
+    <div className="flex items-center gap-2 sm:gap-3">
+      <Avatar className="h-6 w-6 sm:h-10 sm:w-10">
         {currentUser.avatarUrl ? (
           <AvatarImage src={currentUser.avatarUrl} alt={currentUser.username} />
         ) : null}
-        <AvatarFallback style={{ backgroundColor: currentUser.avatarColor }}>
+        <AvatarFallback style={{ backgroundColor: currentUser.avatarColor }} className="text-xs">
           {initials}
         </AvatarFallback>
       </Avatar>
-      <div className="relative">
+      <div className="relative hidden sm:block">
         <input
           type="file"
           accept="image/*"
