@@ -107,7 +107,7 @@ export default function SignUp() {
           <Button
             variant="ghost"
             onClick={() => setLocation("/")}
-            className="gap-2"
+            className="gap-2 text-primary hover:underline"
             data-testid="button-back-to-signin"
           >
             <ArrowLeft className="w-4 h-4" />

@@ -106,8 +106,9 @@ export default function Login() {
         <div className="mt-4 text-center">
           <p className="text-sm text-muted-foreground">Don't have an account?</p>
           <Button
-            variant="link"
+            variant="ghost"
             onClick={() => setLocation("/signup")}
+            className="text-primary hover:underline"
             data-testid="button-go-signup"
           >
             Create one now

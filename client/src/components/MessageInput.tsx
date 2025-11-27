@@ -169,7 +169,12 @@ export function MessageInput() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="end">
-              <EmojiPicker onEmojiClick={handleEmojiSelect} width={320} height={400} />
+              <EmojiPicker 
+                onEmojiClick={handleEmojiSelect} 
+                width={320} 
+                height={400}
+                emojiStyle="twitter"
+              />
             </PopoverContent>
           </Popover>
           
