@@ -141,6 +141,7 @@ export class MemStorage implements IStorage {
       username: user.username,
       avatarColor: user.avatarColor,
       timestamp: new Date().toISOString(),
+      imageUrl: insertMessage.imageUrl,
     };
     this.messages.set(id, message);
     return message;
