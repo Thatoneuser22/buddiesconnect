@@ -132,7 +132,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden">
+    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden group">
       <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>
       
       <div className="relative bg-black group" onMouseMove={handleMouseMove}>
@@ -203,7 +203,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
 
             <button
               onClick={handleDownload}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto"
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto opacity-0 group-hover:opacity-100"
             >
               <Download className="w-4 h-4 text-purple-200" />
             </button>

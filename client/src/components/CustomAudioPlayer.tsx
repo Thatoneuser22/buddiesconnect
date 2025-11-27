@@ -90,7 +90,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   };
 
   return (
-    <div className="w-full p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/50">
+    <div className="w-full p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/50 group relative">
       <p className="text-xs font-semibold text-blue-300 mb-3 truncate">{title}</p>
       <div className="flex items-center gap-3">
         <button
@@ -140,7 +140,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
 
         <button
           onClick={handleDownload}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-blue-500/20 rounded transition"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-blue-500/20 rounded transition opacity-0 group-hover:opacity-100"
         >
           <Download className="w-4 h-4 text-blue-300" />
         </button>

@@ -88,13 +88,13 @@ export function MessageFeed() {
                   </p>
                 )}
                 {message.imageUrl && (
-                  <div className="mt-2 flex flex-col gap-2">
+                  <div className="mt-2 relative w-fit group">
                     <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-64 object-cover" />
                     <button
                       onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
-                      className="flex items-center gap-2 px-3 py-1 bg-secondary hover:bg-secondary/80 rounded text-sm text-foreground transition w-fit"
+                      className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-3 h-3" />
                       Download
                     </button>
                   </div>
