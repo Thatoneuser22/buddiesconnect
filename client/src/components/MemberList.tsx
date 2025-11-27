@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/lib/chatContext";
 import { UserAvatar } from "./UserAvatar";
@@ -41,29 +42,40 @@ export function MemberList() {
                 {group.title}
               </h3>
               <div className="space-y-0.5">
-                {group.members.map((member) => (
-                  <button
-                    key={member.id}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover-elevate active-elevate-2"
-                    data-testid={`button-member-${member.id}`}
-                  >
-                    <UserAvatar
-                      username={member.username}
-                      avatarColor={member.avatarColor}
-                      status={member.status}
-                      size="md"
-                      showStatus
-                    />
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className={`text-sm truncate ${member.status === "offline" ? "text-muted-foreground" : ""}`}>
-                        {member.username}
-                        {member.id === currentUser?.id && (
-                          <span className="text-xs text-muted-foreground ml-1">(you)</span>
-                        )}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                <AnimatePresence>
+                  {group.members.map((member, index) => (
+                    <motion.button
+                      key={member.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                        delay: index * 0.05
+                      }}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover-elevate active-elevate-2"
+                      data-testid={`button-member-${member.id}`}
+                    >
+                      <UserAvatar
+                        username={member.username}
+                        avatarColor={member.avatarColor}
+                        status={member.status}
+                        size="md"
+                        showStatus
+                      />
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className={`text-sm truncate ${member.status === "offline" ? "text-muted-foreground" : ""}`}>
+                          {member.username}
+                          {member.id === currentUser?.id && (
+                            <span className="text-xs text-muted-foreground ml-1">(you)</span>
+                          )}
+                        </p>
+                      </div>
+                    </motion.button>
+                  ))}
+                </AnimatePresence>
               </div>
             </div>
           ))}

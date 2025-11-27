@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/lib/chatContext";
 import { UserAvatar } from "./UserAvatar";
@@ -30,12 +31,39 @@ function shouldGroupMessages(current: Message, previous: Message | null): boolea
 interface MessageItemProps {
   message: Message;
   isGrouped: boolean;
+  index: number;
 }
 
-function MessageItem({ message, isGrouped }: MessageItemProps) {
+function MessageItem({ message, isGrouped, index }: MessageItemProps) {
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        delay: index * 0.05
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -10,
+      transition: { duration: 0.2 }
+    }
+  };
+
   if (isGrouped) {
     return (
-      <div className="group flex items-start gap-3 px-4 py-0.5 hover-elevate rounded-md" data-testid={`message-${message.id}`}>
+      <motion.div 
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="group flex items-start gap-3 px-4 py-0.5 hover-elevate rounded-md" 
+        data-testid={`message-${message.id}`}
+      >
         <div className="w-8 flex-shrink-0 flex items-center justify-center">
           <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
             {format(new Date(message.timestamp), "h:mm a")}
@@ -44,12 +72,19 @@ function MessageItem({ message, isGrouped }: MessageItemProps) {
         <p className="text-sm leading-relaxed break-words" data-testid={`text-message-content-${message.id}`}>
           {message.content}
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="group flex items-start gap-3 px-4 py-2 hover-elevate rounded-md" data-testid={`message-${message.id}`}>
+    <motion.div 
+      variants={itemVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="group flex items-start gap-3 px-4 py-2 hover-elevate rounded-md" 
+      data-testid={`message-${message.id}`}
+    >
       <UserAvatar
         username={message.username}
         avatarColor={message.avatarColor}
@@ -68,7 +103,7 @@ function MessageItem({ message, isGrouped }: MessageItemProps) {
           {message.content}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -137,34 +172,57 @@ export function MessageFeed() {
             )}
           </div>
 
-          <div className="space-y-0">
-            {displayMessages.map((message, index) => {
-              const previousMessage = index > 0 ? displayMessages[index - 1] : null;
-              const isGrouped = shouldGroupMessages(message, previousMessage);
-              return (
-                <MessageItem
-                  key={message.id}
-                  message={message}
-                  isGrouped={isGrouped}
-                />
-              );
-            })}
-          </div>
-
-          {channelTypingUsers.length > 0 && (
-            <div className="px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
-              <span className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-              </span>
-              <span>
-                {channelTypingUsers.length === 1
-                  ? `${channelTypingUsers[0].username} is typing...`
-                  : `${channelTypingUsers.length} people are typing...`}
-              </span>
+          <AnimatePresence>
+            <div className="space-y-0">
+              {displayMessages.map((message, index) => {
+                const previousMessage = index > 0 ? displayMessages[index - 1] : null;
+                const isGrouped = shouldGroupMessages(message, previousMessage);
+                return (
+                  <MessageItem
+                    key={message.id}
+                    message={message}
+                    isGrouped={isGrouped}
+                    index={index}
+                  />
+                );
+              })}
             </div>
-          )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {channelTypingUsers.length > 0 && (
+              <motion.div 
+                className="px-4 py-2 text-sm text-muted-foreground flex items-center gap-2"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <span className="flex gap-1">
+                  <motion.span 
+                    className="w-1.5 h-1.5 bg-muted-foreground rounded-full"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                  />
+                  <motion.span 
+                    className="w-1.5 h-1.5 bg-muted-foreground rounded-full"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+                  />
+                  <motion.span 
+                    className="w-1.5 h-1.5 bg-muted-foreground rounded-full"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+                  />
+                </span>
+                <span>
+                  {channelTypingUsers.length === 1
+                    ? `${channelTypingUsers[0].username} is typing...`
+                    : `${channelTypingUsers.length} people are typing...`}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div ref={bottomRef} />
         </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Check, X, Users, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -137,33 +138,44 @@ export function FriendsPanel() {
               </div>
             ) : (
               <div className="space-y-2">
-                {onlineFriends.map((friend) => (
-                  <div
-                    key={friend.odId}
-                    className="flex items-center gap-3 p-3 rounded-lg hover-elevate"
-                    data-testid={`friend-card-${friend.odId}`}
-                  >
-                    <UserAvatar
-                      username={friend.username}
-                      avatarColor={friend.avatarColor}
-                      status={friend.status}
-                      size="lg"
-                      showStatus
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{friend.username}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{friend.status}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleStartDM(friend.odId)}
-                      data-testid={`button-message-${friend.odId}`}
+                <AnimatePresence>
+                  {onlineFriends.map((friend, index) => (
+                    <motion.div
+                      key={friend.odId}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                        delay: index * 0.05
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-lg hover-elevate"
+                      data-testid={`friend-card-${friend.odId}`}
                     >
-                      <MessageCircle className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                      <UserAvatar
+                        username={friend.username}
+                        avatarColor={friend.avatarColor}
+                        status={friend.status}
+                        size="lg"
+                        showStatus
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">{friend.username}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{friend.status}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleStartDM(friend.odId)}
+                        data-testid={`button-message-${friend.odId}`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </TabsContent>
@@ -176,33 +188,44 @@ export function FriendsPanel() {
               </div>
             ) : (
               <div className="space-y-2">
-                {allFriends.map((friend) => (
-                  <div
-                    key={friend.odId}
-                    className="flex items-center gap-3 p-3 rounded-lg hover-elevate"
-                    data-testid={`friend-card-${friend.odId}`}
-                  >
-                    <UserAvatar
-                      username={friend.username}
-                      avatarColor={friend.avatarColor}
-                      status={friend.status}
-                      size="lg"
-                      showStatus
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{friend.username}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{friend.status}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleStartDM(friend.odId)}
-                      data-testid={`button-message-${friend.odId}`}
+                <AnimatePresence>
+                  {allFriends.map((friend, index) => (
+                    <motion.div
+                      key={friend.odId}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                        delay: index * 0.05
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-lg hover-elevate"
+                      data-testid={`friend-card-${friend.odId}`}
                     >
-                      <MessageCircle className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                      <UserAvatar
+                        username={friend.username}
+                        avatarColor={friend.avatarColor}
+                        status={friend.status}
+                        size="lg"
+                        showStatus
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">{friend.username}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{friend.status}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleStartDM(friend.odId)}
+                        data-testid={`button-message-${friend.odId}`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </TabsContent>
@@ -214,43 +237,54 @@ export function FriendsPanel() {
               </div>
             ) : (
               <div className="space-y-2">
-                {pendingRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-card"
-                    data-testid={`request-card-${request.id}`}
-                  >
-                    <UserAvatar
-                      username={request.fromUsername}
-                      avatarColor="#5865F2"
-                      size="lg"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{request.fromUsername}</p>
-                      <p className="text-xs text-muted-foreground">Incoming Friend Request</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleAcceptRequest(request.id)}
-                        className="text-status-online"
-                        data-testid={`button-accept-${request.id}`}
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeclineRequest(request.id)}
-                        className="text-destructive"
-                        data-testid={`button-decline-${request.id}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                <AnimatePresence>
+                  {pendingRequests.map((request, index) => (
+                    <motion.div
+                      key={request.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                        delay: index * 0.05
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-card"
+                      data-testid={`request-card-${request.id}`}
+                    >
+                      <UserAvatar
+                        username={request.fromUsername}
+                        avatarColor="#5865F2"
+                        size="lg"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">{request.fromUsername}</p>
+                        <p className="text-xs text-muted-foreground">Incoming Friend Request</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleAcceptRequest(request.id)}
+                          className="text-status-online"
+                          data-testid={`button-accept-${request.id}`}
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeclineRequest(request.id)}
+                          className="text-destructive"
+                          data-testid={`button-decline-${request.id}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </TabsContent>
