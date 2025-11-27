@@ -12,6 +12,17 @@ interface ConnectedClient {
 
 const clients: Map<string, ConnectedClient> = new Map();
 
+const BAD_WORDS = [
+  "f***", "s***", "b****", "h***", "d***", "c***", "a**", "p***",
+  "motherf***er", "goddamn", "dammit", "ass", "bitch", "shit", "fuck", "crap",
+  "damn", "hell", "piss", "suck", "wank", "twat", "bollocks"
+];
+
+function containsBadWords(text: string): boolean {
+  const lowerText = text.toLowerCase();
+  return BAD_WORDS.some(word => lowerText.includes(word));
+}
+
 function broadcast(message: object, excludeUserId?: string) {
   const data = JSON.stringify(message);
   clients.forEach((client) => {
@@ -64,8 +75,13 @@ export async function registerRoutes(
           case "message": {
             if (!odId) return;
             
+            const content = message.content || "";
+            if (containsBadWords(content)) {
+              return;
+            }
+            
             const validatedMessage = insertMessageSchema.parse({
-              content: message.content || "",
+              content,
               channelId: message.channelId,
               imageUrl: message.imageUrl,
             });
