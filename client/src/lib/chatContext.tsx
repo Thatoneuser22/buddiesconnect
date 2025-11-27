@@ -20,6 +20,7 @@ interface ChatContextType {
   setDirectMessages: (dms: DirectMessage[]) => void;
   typingUsers: TypingUser[];
   onlineUsers: Map<string, User>;
+  allUsers: User[];
   sendMessage: (content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string, videoName?: string, audioName?: string) => void;
   sendTypingStart: () => void;
   sendTypingStop: () => void;
@@ -44,6 +45,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [directMessages, setDirectMessages] = useState<DirectMessage[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<Map<string, User>>(new Map());
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [activeDM, setActiveDM] = useState<string | null>(null);
   const [dmMessages, setDmMessages] = useState<Message[]>([]);
@@ -149,6 +151,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               return next;
             });
           }
+          setAllUsers(prev => prev.map(u => u.id === data.odId ? { ...u, status: data.status } : u));
           setFriends(prev => prev.map(f => 
             f.odId === data.odId ? { ...f, status: data.status } : f
           ));
@@ -169,11 +172,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           break;
         case "users_online":
           const newMap = new Map<string, User>();
+          const usersList: User[] = [];
           data.users.forEach(u => {
-            const user: User = { id: u.id, username: u.username, avatarColor: u.avatarColor || "", avatarUrl: u.avatarUrl, status: u.status };
+            const user: User = { id: u.id, username: u.username, password: u.password, avatarColor: u.avatarColor || "", avatarUrl: u.avatarUrl, status: u.status };
             newMap.set(u.id, user);
+            usersList.push(user);
           });
           setOnlineUsers(newMap);
+          setAllUsers(usersList);
           break;
         case "avatar_updated":
           // Update all messages from this user with new avatar
@@ -273,6 +279,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setDirectMessages,
       typingUsers,
       onlineUsers,
+      allUsers,
       sendMessage,
       sendTypingStart,
       sendTypingStop,
