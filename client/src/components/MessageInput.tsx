@@ -80,7 +80,7 @@ export function MessageInput() {
           placeholder={isDisabled ? "Select a channel" : "Type a message..."}
           disabled={isDisabled}
           rows={1}
-          className="flex-1 resize-none p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          className="flex-1 resize-none p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 bg-black text-white placeholder-gray-400"
         />
 
         <Button type="submit" disabled={(!content.trim() && !imageUrl) || isDisabled}>
