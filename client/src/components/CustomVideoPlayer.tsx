@@ -8,6 +8,7 @@ interface CustomVideoPlayerProps {
 
 export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -43,7 +44,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.fullscreenElement !== videoRef.current) return;
+      if (document.fullscreenElement !== containerRef.current) return;
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
@@ -66,7 +67,6 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);
-    setCurrentTime(time);
     if (videoRef.current) {
       videoRef.current.currentTime = time;
     }
@@ -94,10 +94,9 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   const toggleFullscreen = () => {
-    if (videoRef.current) {
+    if (containerRef.current) {
       if (!document.fullscreenElement) {
-        videoRef.current.requestFullscreen().catch(err => console.error(err));
-        setShowControls(true);
+        containerRef.current.requestFullscreen().catch(err => console.error(err));
       } else {
         document.exitFullscreen();
       }
@@ -109,7 +108,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     if (hideControlsTimeoutRef.current) {
       clearTimeout(hideControlsTimeoutRef.current);
     }
-    if (document.fullscreenElement === videoRef.current && isPlaying) {
+    if (document.fullscreenElement === containerRef.current && isPlaying) {
       hideControlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
       }, 3000);
@@ -133,7 +132,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden">
+    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden">
       <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>
       
       <div className="relative bg-black group" onMouseMove={handleMouseMove}>
@@ -144,80 +143,70 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
           onClick={togglePlay}
         />
 
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-between p-3 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0"
+        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity duration-300 pointer-events-none hover:pointer-events-auto ${
+          showControls ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}>
-          {/* Top - Title in fullscreen */}
-          {document.fullscreenElement === videoRef.current && (
-            <div className="flex-shrink-0">
-              <p className="text-sm font-semibold text-white">{title}</p>
-            </div>
-          )}
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            value={currentTime}
+            onChange={handleProgressChange}
+            className="w-full h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500 mb-2 pointer-events-auto"
+          />
 
-          {/* Bottom - Controls */}
-          <div className="flex-shrink-0 space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={togglePlay}
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-purple-500 hover:bg-purple-600 rounded-full transition pointer-events-auto"
+            >
+              {isPlaying ? (
+                <Pause className="w-4 h-4 text-white" />
+              ) : (
+                <Play className="w-4 h-4 text-white ml-0.5" />
+              )}
+            </button>
+
+            <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(currentTime)}</span>
+            <span className="text-xs text-purple-200">/</span>
+            <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(duration)}</span>
+
+            <div className="flex-1" />
+
+            <button
+              onClick={toggleMute}
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto"
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 text-purple-200" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-purple-200" />
+              )}
+            </button>
+
             <input
               type="range"
               min="0"
-              max={duration || 0}
-              value={currentTime}
-              onChange={handleProgressChange}
-              className="w-full h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              max="1"
+              step="0.1"
+              value={isMuted ? 0 : volume}
+              onChange={handleVolumeChange}
+              className="w-12 h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500 pointer-events-auto"
             />
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={togglePlay}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-purple-500 hover:bg-purple-600 rounded-full transition"
-              >
-                {isPlaying ? (
-                  <Pause className="w-4 h-4 text-white" />
-                ) : (
-                  <Play className="w-4 h-4 text-white ml-0.5" />
-                )}
-              </button>
+            <button
+              onClick={toggleFullscreen}
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto"
+            >
+              <Maximize className="w-4 h-4 text-purple-200" />
+            </button>
 
-              <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(currentTime)}</span>
-              <span className="text-xs text-purple-200">/</span>
-              <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(duration)}</span>
-
-              <div className="flex-1" />
-
-              <button
-                onClick={toggleMute}
-                className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
-              >
-                {isMuted ? (
-                  <VolumeX className="w-4 h-4 text-purple-200" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-purple-200" />
-                )}
-              </button>
-
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="w-12 h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500"
-              />
-
-              <button
-                onClick={toggleFullscreen}
-                className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
-              >
-                <Maximize className="w-4 h-4 text-purple-200" />
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
-              >
-                <Download className="w-4 h-4 text-purple-200" />
-              </button>
-            </div>
+            <button
+              onClick={handleDownload}
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto"
+            >
+              <Download className="w-4 h-4 text-purple-200" />
+            </button>
           </div>
         </div>
       </div>
