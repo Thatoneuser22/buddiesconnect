@@ -138,14 +138,12 @@ export async function registerRoutes(
               
               await storage.updateUserStatus(odId, "online");
               
-              broadcast({ type: "user_status", odId, status: "online" }, odId);
-              
               const allUsers = await storage.getAllUsers();
               const onlineUsers = allUsers
                 .filter(u => clients.has(u.id))
                 .map(u => ({ id: u.id, status: u.status }));
               
-              ws.send(JSON.stringify({ type: "users_online", users: onlineUsers }));
+              broadcast({ type: "users_online", users: onlineUsers });
             }
             break;
           }

@@ -69,9 +69,9 @@ export function MessageFeed() {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-1">
         {groupedMessages.map((group, groupIdx) => (
-          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in">
+          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-4">
             {group.messages.map((message, msgIdx) => {
               const isFirstInGroup = msgIdx === 0;
               const isLastInGroup = msgIdx === group.messages.length - 1;
