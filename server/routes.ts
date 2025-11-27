@@ -28,6 +28,9 @@ function containsBadWords(text: string): boolean {
 function isSpam(text: string): boolean {
   const trimmed = text.trim();
   
+  // Very short messages (less than 3 chars) sent rapidly could be spam
+  if (trimmed.length < 3) return false; // Allow short messages, rate limit will catch spam
+  
   // Check for repeated characters (more than 4 in a row)
   if (/(.)\1{4,}/.test(trimmed)) return true;
   

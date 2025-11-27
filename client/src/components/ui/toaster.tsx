@@ -12,7 +12,7 @@ import { AlertCircle, CheckCircle, Info } from "lucide-react"
 export function Toaster() {
   const { toasts } = useToast()
 
-  const getIcon = (variant?: string) => {
+  const getIcon = (variant: string | undefined | null) => {
     switch (variant) {
       case "destructive":
         return <AlertCircle className="h-5 w-5 text-red-300 flex-shrink-0" />

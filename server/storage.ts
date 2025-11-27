@@ -26,6 +26,7 @@ export interface IStorage {
   
   getMessages(channelId: string): Promise<Message[]>;
   createMessage(userId: string, message: InsertMessage): Promise<Message>;
+  deleteMessage(messageId: string): Promise<boolean>;
   getDMMessages(user1Id: string, user2Id: string): Promise<Message[]>;
   createDMMessage(fromUserId: string, toUserId: string, content: string): Promise<Message>;
   
@@ -44,7 +45,9 @@ export class MemStorage implements IStorage {
   private friendships: Map<string, Set<string>>;
   private dmMessages: Map<string, Message[]>;
   private lastMessageTime: Map<string, number>;
+  private messageCountByUser: Map<string, number[]>; // timestamps of recent messages
   private readonly MESSAGE_COOLDOWN_MS = 1000; // 1 second cooldown
+  private readonly MAX_MESSAGES_PER_MINUTE = 15; // max 15 messages per minute
 
   constructor() {
     this.users = new Map();
@@ -54,6 +57,7 @@ export class MemStorage implements IStorage {
     this.friendships = new Map();
     this.dmMessages = new Map();
     this.lastMessageTime = new Map();
+    this.messageCountByUser = new Map();
     
     const defaultChannels: InsertChannel[] = [
       { name: "general", type: "text" },
@@ -145,12 +149,25 @@ export class MemStorage implements IStorage {
     const user = await this.getUser(userId);
     if (!user) throw new Error("User not found");
     
-    // Check rate limit
     const now = Date.now();
+    const oneMinuteAgo = now - 60000;
+    
+    // Check rate limit - 1 second between messages
     const lastTime = this.lastMessageTime.get(userId) || 0;
     if (now - lastTime < this.MESSAGE_COOLDOWN_MS) {
-      throw new Error("Too many messages. Please wait before sending another message.");
+      throw new Error("Please wait before sending another message.");
     }
+    
+    // Check messages per minute limit
+    let userMessages = this.messageCountByUser.get(userId) || [];
+    userMessages = userMessages.filter(ts => ts > oneMinuteAgo);
+    
+    if (userMessages.length >= this.MAX_MESSAGES_PER_MINUTE) {
+      throw new Error("Too many messages. Please slow down.");
+    }
+    
+    userMessages.push(now);
+    this.messageCountByUser.set(userId, userMessages);
     this.lastMessageTime.set(userId, now);
     
     const id = randomUUID();
@@ -175,6 +192,10 @@ export class MemStorage implements IStorage {
     }
     this.messages.set(id, message);
     return message;
+  }
+
+  async deleteMessage(messageId: string): Promise<boolean> {
+    return this.messages.delete(messageId);
   }
 
   async getDMMessages(user1Id: string, user2Id: string): Promise<Message[]> {
