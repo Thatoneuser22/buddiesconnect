@@ -20,7 +20,7 @@ interface ChatContextType {
   setDirectMessages: (dms: DirectMessage[]) => void;
   typingUsers: TypingUser[];
   onlineUsers: Map<string, User>;
-  sendMessage: (content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string) => void;
+  sendMessage: (content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string, videoName?: string, audioName?: string) => void;
   sendTypingStart: () => void;
   sendTypingStop: () => void;
   isConnected: boolean;
@@ -183,12 +183,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUser, addMessage, activeDM]);
 
-  const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string) => {
+  const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string, videoName?: string, audioName?: string) => {
     if (!wsRef.current || !currentUser) return;
     
     const messageData = activeDM 
-      ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl, audioUrl, replyToId }
-      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl, audioUrl, replyToId };
+      ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl, videoName, audioUrl, audioName, replyToId }
+      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl, videoName, audioUrl, audioName, replyToId };
     
     wsRef.current.send(JSON.stringify(messageData));
   }, [currentUser, activeChannel, activeDM]);

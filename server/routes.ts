@@ -144,6 +144,8 @@ export async function registerRoutes(
             });
             
             const newMessage = await storage.createMessage(odId, validatedMessage);
+            newMessage.videoName = message.videoName;
+            newMessage.audioName = message.audioName;
             
             broadcast({ type: "message", message: newMessage });
             break;

@@ -29,7 +29,7 @@ export function MessageInput() {
     if (!content.trim() && !imageUrl && !videoUrl && !audioUrl) return;
     if (!activeChannel) return;
 
-    sendMessage(content.trim(), imageUrl, videoUrl, audioUrl, replyingTo?.id);
+    sendMessage(content.trim(), imageUrl, videoUrl, audioUrl, replyingTo?.id, videoName, audioName);
     setContent("");
     setImageUrl("");
     setVideoUrl("");
