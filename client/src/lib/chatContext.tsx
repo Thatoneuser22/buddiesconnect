@@ -174,7 +174,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           const newMap = new Map<string, User>();
           const usersList: User[] = [];
           data.users.forEach(u => {
-            const user: User = { id: u.id, username: u.username, password: u.password, avatarColor: u.avatarColor || "", avatarUrl: u.avatarUrl, status: u.status };
+            const user: User = { id: u.id, username: u.username, avatarColor: u.avatarColor || "", avatarUrl: u.avatarUrl, status: u.status };
             newMap.set(u.id, user);
             usersList.push(user);
           });
@@ -198,8 +198,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             setCurrentUser({ ...currentUser, avatarUrl: data.avatarUrl });
           }
           break;
-        case "error":
-          // Error will be handled by calling context (e.g., spam prevention)
+        default:
+          // Unknown message type
           break;
       }
     };
