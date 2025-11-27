@@ -60,6 +60,7 @@ export type Message = {
   timestamp: string;
   imageUrl?: string;
   videoUrl?: string;
+  videoName?: string;
   audioUrl?: string;
   audioName?: string;
   replyToId?: string;

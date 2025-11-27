@@ -8,6 +8,7 @@ export function MessageInput() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState<string>("");
+  const [videoName, setVideoName] = useState<string>("");
   const [audioUrl, setAudioUrl] = useState<string>("");
   const [audioName, setAudioName] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
@@ -28,23 +29,11 @@ export function MessageInput() {
     if (!content.trim() && !imageUrl && !videoUrl && !audioUrl) return;
     if (!activeChannel) return;
 
-    // Pass audio info as extended message data
-    if (audioUrl) {
-      const messageData = {
-        content: content.trim(),
-        imageUrl,
-        videoUrl,
-        audioUrl,
-        audioName,
-        replyToId: replyingTo?.id,
-      };
-      (window as any)._pendingAudioData = messageData;
-    }
-    
     sendMessage(content.trim(), imageUrl, videoUrl, audioUrl, replyingTo?.id);
     setContent("");
     setImageUrl("");
     setVideoUrl("");
+    setVideoName("");
     setAudioUrl("");
     setAudioName("");
     setReplyingTo(null);
@@ -94,6 +83,7 @@ export function MessageInput() {
         setAudioName(data.name);
       } else if (file.type.startsWith("video/")) {
         setVideoUrl(data.url);
+        setVideoName(data.name);
       } else {
         setImageUrl(data.url);
       }
@@ -133,8 +123,11 @@ export function MessageInput() {
           )}
           {videoUrl && (
             <div className="relative w-fit">
-              <video src={videoUrl} className="h-20 rounded" />
-              <button onClick={() => setVideoUrl("")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
+              <div className="p-2 bg-secondary rounded">
+                <p className="text-xs text-muted-foreground mb-1 truncate max-w-xs">{videoName}</p>
+                <video src={videoUrl} className="h-20 rounded" />
+              </div>
+              <button onClick={() => { setVideoUrl(""); setVideoName(""); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
                 <X className="w-3 h-3" />
               </button>
             </div>

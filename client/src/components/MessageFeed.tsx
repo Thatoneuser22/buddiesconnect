@@ -80,16 +80,15 @@ export function MessageFeed() {
                   <img src={message.imageUrl} alt="attachment" className="mt-2 max-w-xs rounded max-h-64 object-cover" />
                 )}
                 {message.videoUrl && (
-                  <video src={message.videoUrl} controls className="mt-2 max-w-xs rounded max-h-64" />
+                  <div className="mt-2 p-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-500/30 max-w-xs">
+                    <p className="text-xs font-semibold text-purple-400 truncate mb-2">{message.videoName || "Video"}</p>
+                    <video src={message.videoUrl} controls className="w-full rounded" />
+                  </div>
                 )}
                 {message.audioUrl && (
-                  <div className="mt-2 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-500/30">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-blue-400 truncate">{message.audioName || "Audio"}</p>
-                        <audio src={message.audioUrl} controls className="mt-2 w-full max-w-xs" />
-                      </div>
-                    </div>
+                  <div className="mt-2 p-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg border border-blue-500/30 max-w-xs">
+                    <p className="text-xs font-semibold text-blue-400 truncate mb-2">{message.audioName || "Audio"}</p>
+                    <audio src={message.audioUrl} controls className="w-full" />
                   </div>
                 )}
               </div>
