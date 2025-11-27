@@ -1,23 +1,20 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Smile, Plus, X } from "lucide-react";
+import { Send, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChat } from "@/lib/chatContext";
 import { useToast } from "@/hooks/use-toast";
-import EmojiPicker from "emoji-picker-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function MessageInput() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [showEmoji, setShowEmoji] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sendMessage, sendTypingStart, sendTypingStop, activeChannel, activeDM, friends, isConnected } = useChat();
+  const { sendMessage, activeChannel, activeDM, isConnected } = useChat();
   const { toast } = useToast();
 
-  const dmFriend = activeDM ? friends.find(f => f.odId === activeDM) : null;
-  const placeholder = activeDM && dmFriend 
-    ? `Message @${dmFriend.username}` 
+  const dmFriend = activeDM ? null : null;
+  const placeholder = activeDM 
+    ? "Message @friend" 
     : activeChannel 
       ? `Message #${activeChannel.name}` 
       : "Select a channel";
@@ -44,33 +41,18 @@ export function MessageInput() {
     }
 
     sendMessage(content.trim(), imageUrl);
-    sendTypingStop();
     setContent("");
     setImageUrl("");
   };
 
-  const handleEmojiSelect = (emojiObject: any) => {
-    setContent(prev => prev + emojiObject.emoji);
-    setShowEmoji(false);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast({
-        title: "Invalid file",
-        description: "Please select an image file",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Image must be less than 5MB",
+        description: "Images must be under 5MB",
         variant: "destructive",
       });
       return;
@@ -78,116 +60,81 @@ export function MessageInput() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setImageUrl(dataUrl);
-      toast({
-        title: "Image attached",
-        description: "Your image is ready to send",
-      });
+      const result = event.target?.result;
+      if (typeof result === "string") {
+        setImageUrl(result);
+      }
     };
     reader.readAsDataURL(file);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
-    if (e.target.value.trim()) {
-      sendTypingStart();
-    } else {
-      sendTypingStop();
-    }
   };
 
   const isDisabled = !activeChannel && !activeDM;
 
   return (
-    <div className="px-4 pb-6 pt-2 space-y-2">
+    <div className="border-t p-4 bg-background">
       {imageUrl && (
-        <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted">
-          <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute top-1 right-1 h-6 w-6"
+        <div className="mb-3 relative w-fit">
+          <img 
+            src={imageUrl} 
+            alt="Preview" 
+            className="h-24 rounded border"
+          />
+          <button
             onClick={() => setImageUrl("")}
+            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+            type="button"
+            data-testid="button-remove-image"
           >
             <X className="w-4 h-4" />
-          </Button>
+          </button>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="flex items-end gap-2 bg-muted rounded-lg p-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 flex-shrink-0"
-            disabled={isDisabled}
-            onClick={() => fileInputRef.current?.click()}
-            data-testid="button-attach-file"
-          >
-            <Plus className="w-5 h-5" />
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-          
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={isDisabled}
-            rows={1}
-            className="flex-1 bg-transparent resize-none text-sm py-2.5 px-1 focus:outline-none placeholder:text-muted-foreground min-h-[40px] max-h-32"
-            data-testid="input-message"
-          />
-          
-          <Popover open={showEmoji} onOpenChange={setShowEmoji}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 flex-shrink-0"
-                disabled={isDisabled}
-                data-testid="button-emoji"
-              >
-                <Smile className="w-5 h-5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-96 p-0" align="end">
-              <EmojiPicker 
-                onEmojiClick={handleEmojiSelect} 
-                width={384} 
-                height={500}
-                lazyLoadEmojis
-              />
-            </PopoverContent>
-          </Popover>
-          
-          <Button
-            type="submit"
-            size="icon"
-            className="h-10 w-10 flex-shrink-0"
-            disabled={(!content.trim() && !imageUrl) || isDisabled}
-            data-testid="button-send-message"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
+      
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageSelect}
+          className="hidden"
+          data-testid="input-image-file"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isDisabled}
+          data-testid="button-attach"
+        >
+          <Plus className="w-5 h-5" />
+        </Button>
+        
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e as any);
+            }
+          }}
+          placeholder={placeholder}
+          disabled={isDisabled}
+          rows={1}
+          className="flex-1 bg-transparent resize-none text-sm py-2 px-3 border rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+          data-testid="input-message"
+        />
+        
+        <Button
+          type="submit"
+          size="icon"
+          disabled={(!content.trim() && !imageUrl) || isDisabled}
+          data-testid="button-send-message"
+        >
+          <Send className="w-4 h-4" />
+        </Button>
       </form>
     </div>
   );
