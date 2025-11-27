@@ -15,6 +15,8 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const hideControlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -23,17 +25,37 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     const handleTimeUpdate = () => setCurrentTime(video.currentTime);
     const handleLoadedMetadata = () => setDuration(video.duration);
     const handleEnded = () => setIsPlaying(false);
+    
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isCurrentlyFullscreen);
+      if (isCurrentlyFullscreen) {
+        setShowControls(true);
+      }
+    };
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isFullscreen) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        togglePlay();
+      }
+    };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
     video.addEventListener("ended", handleEnded);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       video.removeEventListener("ended", handleEnded);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [isFullscreen]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -79,11 +101,21 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     if (containerRef.current) {
       if (!isFullscreen) {
         containerRef.current.requestFullscreen().catch(err => console.error(err));
-        setIsFullscreen(true);
       } else {
         document.exitFullscreen();
-        setIsFullscreen(false);
       }
+    }
+  };
+
+  const handleMouseMove = () => {
+    setShowControls(true);
+    if (hideControlsTimeoutRef.current) {
+      clearTimeout(hideControlsTimeoutRef.current);
+    }
+    if (isFullscreen && isPlaying) {
+      hideControlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
     }
   };
 
@@ -104,18 +136,20 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden">
-      <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>
+    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden" onMouseMove={handleMouseMove}>
+      {!isFullscreen && <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>}
       
       <div className="relative bg-black group">
         <video
           ref={videoRef}
           src={src}
-          className="w-full"
+          className="w-full cursor-pointer"
           onClick={togglePlay}
         />
 
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 opacity-0 group-hover:opacity-100 transition">
+        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition ${
+          isFullscreen ? (showControls ? "opacity-100" : "opacity-0") : "opacity-0 group-hover:opacity-100"
+        }`}>
           <input
             type="range"
             min="0"
