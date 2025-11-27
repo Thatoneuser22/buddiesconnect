@@ -6,6 +6,7 @@ export type UserStatus = z.infer<typeof userStatusEnum>;
 export const users = {
   id: "",
   username: "",
+  password: "",
   avatarColor: "",
   avatarUrl: "",
   status: "offline" as UserStatus,
@@ -13,6 +14,7 @@ export const users = {
 
 export const insertUserSchema = z.object({
   username: z.string().min(2).max(32),
+  password: z.string().min(4).max(128),
   avatarColor: z.string().optional(),
   avatarUrl: z.string().optional(),
 });
@@ -21,6 +23,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = {
   id: string;
   username: string;
+  password: string;
   avatarColor: string;
   avatarUrl?: string;
   status: UserStatus;

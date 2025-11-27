@@ -179,17 +179,15 @@ export function MessageFeed() {
                         </div>
                       )}
                     </div>
-                    {isFirstInGroup && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="opacity-0 group-hover:opacity-100 transition h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
-                        onClick={() => setReplyingTo(message)}
-                        data-testid={`reply-button-${message.id}`}
-                      >
-                        <Reply className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
-                    )}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="opacity-0 group-hover:opacity-100 transition h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
+                      onClick={() => setReplyingTo(message)}
+                      data-testid={`reply-button-${message.id}`}
+                    >
+                      <Reply className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </Button>
                   </div>
                 </div>
               );

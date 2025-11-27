@@ -8,6 +8,7 @@ import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 import multer from "multer";
+import bcrypt from "bcrypt";
 
 interface ConnectedClient {
   odId: string;
@@ -259,8 +260,25 @@ export async function registerRoutes(
   app.post("/api/users", async (req, res) => {
     try {
       const validated = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existing = await storage.getUserByUsername(validated.username);
+      if (existing) {
+        // Login: validate password
+        const passwordValid = await storage.validatePassword(existing.id, validated.password);
+        if (!passwordValid) {
+          return res.status(401).json({ error: "Invalid password" });
+        }
+        // Return user without password
+        const { password, ...userWithoutPassword } = existing;
+        return res.json(userWithoutPassword);
+      }
+      
+      // Create new user
       const user = await storage.createUser(validated);
-      res.json(user);
+      // Return user without password
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Create user error:", error);
       res.status(400).json({ error: "Invalid user data" });

@@ -6,6 +6,7 @@ import type {
   UserStatus
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
 
 const AVATAR_COLORS = [
   "#5865F2", "#57F287", "#FEE75C", "#EB459E", "#ED4245",
@@ -84,16 +85,24 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const avatarColor = insertUser.avatarColor || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
     
     const user: User = { 
       id, 
       username: insertUser.username,
+      password: hashedPassword,
       avatarColor,
       status: "online"
     };
     this.users.set(id, user);
     this.friendships.set(id, new Set());
     return user;
+  }
+
+  async validatePassword(userId: string, password: string): Promise<boolean> {
+    const user = this.users.get(userId);
+    if (!user) return false;
+    return bcrypt.compare(password, user.password);
   }
 
   async updateUserStatus(id: string, status: UserStatus): Promise<User | undefined> {

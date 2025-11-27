@@ -17,6 +17,7 @@ const AVATAR_COLORS = [
 
 export default function Login() {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   const { setCurrentUser, setChannels, setActiveChannel, channels } = useChat();
@@ -32,11 +33,19 @@ export default function Login() {
       });
       return;
     }
+    if (!password || password.length < 4) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 4 characters",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
       const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-      const user = await apiRequest<User>("POST", "/api/users", { username: username.trim(), avatarColor });
+      const user = await apiRequest<User>("POST", "/api/users", { username: username.trim(), password, avatarColor });
       
       setCurrentUserId(user.id);
       setCurrentUser(user);
@@ -84,10 +93,22 @@ export default function Login() {
                   data-testid="input-username"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  maxLength={128}
+                  data-testid="input-password"
+                />
+              </div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !username.trim()}
+                disabled={isLoading || !username.trim() || !password}
                 data-testid="button-join"
               >
                 {isLoading ? "Joining..." : "Join"}
