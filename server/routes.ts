@@ -141,7 +141,7 @@ export async function registerRoutes(
               const allUsers = await storage.getAllUsers();
               const onlineUsers = allUsers
                 .filter(u => clients.has(u.id))
-                .map(u => ({ id: u.id, status: u.status }));
+                .map(u => ({ id: u.id, username: u.username, status: u.status }));
               
               broadcast({ type: "users_online", users: onlineUsers });
             }
