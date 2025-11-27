@@ -4,6 +4,7 @@ import { ChannelSidebar } from "@/components/ChannelSidebar";
 import { ChatHeader } from "@/components/ChatHeader";
 import { MessageFeed } from "@/components/MessageFeed";
 import { MessageInput } from "@/components/MessageInput";
+import { MemberList } from "@/components/MemberList";
 import { useChat } from "@/lib/chatContext";
 
 export default function Chat() {
@@ -32,6 +33,7 @@ export default function Chat() {
             <MessageFeed />
             <MessageInput />
           </div>
+          <MemberList />
         </div>
       </div>
     </div>
