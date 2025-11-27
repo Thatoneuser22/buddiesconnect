@@ -4,6 +4,10 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertChannelSchema, insertMessageSchema, insertFriendRequestSchema } from "@shared/schema";
 import type { UserStatus } from "@shared/schema";
+import fs from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
+import multer from "multer";
 
 interface ConnectedClient {
   odId: string;
@@ -37,10 +41,52 @@ function sendToUser(odId: string, message: object) {
   }
 }
 
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage_multer = multer({ 
+  storage: multer.diskStorage({
+    destination: uploadsDir,
+    filename: (req, file, cb) => {
+      cb(null, randomUUID() + path.extname(file.originalname));
+    }
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Serve uploaded files
+  app.use("/uploads", (req, res, next) => {
+    const filePath = path.join(uploadsDir, path.basename(req.path));
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ error: "File not found" });
+    }
+  });
+
+  // Upload endpoints
+  app.post("/api/upload/image", storage_multer.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ url });
+  });
+
+  app.post("/api/upload/video", storage_multer.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ url });
+  });
+
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
 
   wss.on("connection", (ws) => {
@@ -82,6 +128,7 @@ export async function registerRoutes(
               content,
               channelId: message.channelId,
               imageUrl: message.imageUrl,
+              videoUrl: message.videoUrl,
             });
             
             const newMessage = await storage.createMessage(odId, validatedMessage);
