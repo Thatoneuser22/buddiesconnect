@@ -65,10 +65,10 @@ export function MessageFeed() {
                   message.content
                 )}
               </p>
-              {message.imageUrl && message.imageUrl.startsWith("data:image/") && (
+              {message.imageUrl && (
                 <img src={message.imageUrl} alt="attachment" className="mt-2 max-w-xs rounded max-h-64 object-cover" />
               )}
-              {message.videoUrl && message.videoUrl.startsWith("data:video/") && (
+              {message.videoUrl && (
                 <video src={message.videoUrl} controls className="mt-2 max-w-xs rounded max-h-64" />
               )}
             </div>
