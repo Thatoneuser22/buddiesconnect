@@ -168,15 +168,13 @@ export function MessageInput() {
                 <Smile className="w-5 h-5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
-              <div className="dark:bg-slate-950 dark:text-white">
-                <EmojiPicker 
-                  onEmojiClick={handleEmojiSelect} 
-                  width={320} 
-                  height={400}
-                  theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-                />
-              </div>
+            <PopoverContent className="w-96 p-0" align="end">
+              <EmojiPicker 
+                onEmojiClick={handleEmojiSelect} 
+                width={384} 
+                height={500}
+                lazyLoadEmojis
+              />
             </PopoverContent>
           </Popover>
           

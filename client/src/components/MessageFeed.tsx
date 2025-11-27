@@ -69,7 +69,7 @@ function MessageItem({ message, isGrouped, index }: MessageItemProps) {
             {format(new Date(message.timestamp), "h:mm a")}
           </span>
         </div>
-        <p className="text-sm leading-relaxed break-words" data-testid={`text-message-content-${message.id}`}>
+        <p className="text-sm leading-relaxed break-words text-lg" data-testid={`text-message-content-${message.id}`}>
           {message.content}
         </p>
         {message.imageUrl && (
@@ -106,7 +106,7 @@ function MessageItem({ message, isGrouped, index }: MessageItemProps) {
             {formatMessageTime(message.timestamp)}
           </span>
         </div>
-        <p className="text-sm leading-relaxed break-words" data-testid={`text-message-content-${message.id}`}>
+        <p className="text-sm leading-relaxed break-words text-lg" data-testid={`text-message-content-${message.id}`}>
           {message.content}
         </p>
         {message.imageUrl && (
