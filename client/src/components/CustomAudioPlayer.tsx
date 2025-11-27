@@ -120,7 +120,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   };
 
   return (
-    <div className="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 group hover:bg-slate-750 transition">
+    <div className="w-full p-3 bg-gradient-to-br from-slate-800 via-slate-800 to-blue-900/30 rounded-lg border border-slate-700 group hover:to-blue-900/40 transition">
       <div className="flex items-start gap-3 mb-2">
         <FileAudio className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">

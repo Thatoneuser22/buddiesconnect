@@ -158,8 +158,8 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full bg-slate-800 rounded-lg border border-slate-700 overflow-hidden group">
-      <div className="flex items-center gap-2 p-2 bg-slate-900 border-b border-slate-700">
+    <div ref={containerRef} className="w-full bg-gradient-to-br from-slate-800 via-slate-800 to-purple-900/30 rounded-lg border border-slate-700 overflow-hidden group">
+      <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-slate-900 to-slate-900/80 border-b border-slate-700">
         <FileVideo className="w-4 h-4 text-slate-400 flex-shrink-0" />
         <p className="text-sm font-medium text-slate-200 truncate flex-1">{title}</p>
       </div>
