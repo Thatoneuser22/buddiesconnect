@@ -25,8 +25,17 @@ export function MessageFeed() {
 
   const displayMessages = messages.filter(m => m.channelId === activeChannel?.id);
   
+  // Resolve replyTo messages
+  const messagesWithReplyResolved = displayMessages.map(msg => {
+    if (msg.replyToId && !msg.replyTo) {
+      const replyToMsg = messages.find(m => m.id === msg.replyToId);
+      return { ...msg, replyTo: replyToMsg };
+    }
+    return msg;
+  });
+  
   // Group messages by user
-  const groupedMessages = displayMessages.reduce((acc: { user: string; messages: Message[] }[], msg) => {
+  const groupedMessages = messagesWithReplyResolved.reduce((acc: { user: string; messages: Message[] }[], msg) => {
     if (acc.length === 0 || acc[acc.length - 1].user !== msg.username) {
       acc.push({ user: msg.username, messages: [msg] });
     } else {
