@@ -28,13 +28,6 @@ function containsBadWords(text: string): boolean {
 function isSpam(text: string): boolean {
   const trimmed = text.trim();
   
-  // Check for very short meaningless messages (under 5 chars, single word/letter)
-  const words = trimmed.split(/\s+/);
-  if (words.length === 1 && trimmed.length < 5) {
-    const filler = ["hi", "hey", "ok", "we", "me", "im", "i", "a"];
-    if (filler.includes(trimmed.toLowerCase())) return true;
-  }
-  
   // Check for repeated characters (more than 4 in a row)
   if (/(.)\1{4,}/.test(trimmed)) return true;
   

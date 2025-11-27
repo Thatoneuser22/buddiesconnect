@@ -15,6 +15,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const hideControlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -79,6 +80,14 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
       videoRef.current.volume = vol;
     }
     if (vol > 0) setIsMuted(false);
+  };
+
+  const handlePlaybackRateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const rate = parseFloat(e.target.value);
+    setPlaybackRate(rate);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = rate;
+    }
   };
 
   const toggleMute = () => {
@@ -172,6 +181,19 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
             <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(duration)}</span>
 
             <div className="flex-1" />
+
+            <select
+              value={playbackRate}
+              onChange={handlePlaybackRateChange}
+              className="text-xs bg-purple-900/50 text-purple-200 rounded px-2 py-1 cursor-pointer border border-purple-500/30 pointer-events-auto"
+            >
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1">1x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2x</option>
+            </select>
 
             <button
               onClick={toggleMute}

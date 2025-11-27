@@ -13,6 +13,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -21,15 +22,21 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => setIsPlaying(false);
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
     };
   }, []);
 
@@ -40,13 +47,11 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
       } else {
         audioRef.current.play();
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);
-    setCurrentTime(time);
     if (audioRef.current) {
       audioRef.current.currentTime = time;
     }
@@ -59,6 +64,14 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
       audioRef.current.volume = vol;
     }
     if (vol > 0) setIsMuted(false);
+  };
+
+  const handlePlaybackRateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const rate = parseFloat(e.target.value);
+    setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
   };
 
   const toggleMute = () => {
@@ -116,6 +129,19 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           />
           <span className="text-xs text-blue-300 whitespace-nowrap">{formatTime(duration)}</span>
         </div>
+
+        <select
+          value={playbackRate}
+          onChange={handlePlaybackRateChange}
+          className="text-xs bg-blue-900/50 text-blue-300 rounded px-2 py-1 cursor-pointer border border-blue-500/30"
+        >
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
 
         <button
           onClick={toggleMute}
