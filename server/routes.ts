@@ -1,16 +1,286 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { insertUserSchema, insertChannelSchema, insertMessageSchema, insertFriendRequestSchema } from "@shared/schema";
+import type { UserStatus } from "@shared/schema";
+
+interface ConnectedClient {
+  odId: string;
+  ws: WebSocket;
+}
+
+const clients: Map<string, ConnectedClient> = new Map();
+
+function broadcast(message: object, excludeUserId?: string) {
+  const data = JSON.stringify(message);
+  clients.forEach((client) => {
+    if (client.odId !== excludeUserId && client.ws.readyState === WebSocket.OPEN) {
+      client.ws.send(data);
+    }
+  });
+}
+
+function sendToUser(odId: string, message: object) {
+  const client = clients.get(odId);
+  if (client && client.ws.readyState === WebSocket.OPEN) {
+    client.ws.send(JSON.stringify(message));
+  }
+}
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  wss.on("connection", (ws) => {
+    let odId: string | null = null;
+
+    ws.on("message", async (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+
+        switch (message.type) {
+          case "auth": {
+            odId = message.odId;
+            if (odId) {
+              clients.set(odId, { odId, ws });
+              
+              await storage.updateUserStatus(odId, "online");
+              
+              broadcast({ type: "user_status", odId, status: "online" }, odId);
+              
+              const allUsers = await storage.getAllUsers();
+              const onlineUsers = allUsers
+                .filter(u => clients.has(u.id))
+                .map(u => ({ id: u.id, status: u.status }));
+              
+              ws.send(JSON.stringify({ type: "users_online", users: onlineUsers }));
+            }
+            break;
+          }
+
+          case "message": {
+            if (!odId) return;
+            
+            const validatedMessage = insertMessageSchema.parse({
+              content: message.content,
+              channelId: message.channelId,
+            });
+            
+            const newMessage = await storage.createMessage(odId, validatedMessage);
+            
+            broadcast({ type: "message", message: newMessage });
+            break;
+          }
+
+          case "dm_message": {
+            if (!odId) return;
+            
+            const toUserId = message.toUserId;
+            const content = message.content;
+            
+            if (!toUserId || !content) return;
+            
+            const newMessage = await storage.createDMMessage(odId, toUserId, content);
+            
+            sendToUser(odId, { type: "dm_message", message: newMessage, odId: toUserId });
+            sendToUser(toUserId, { type: "dm_message", message: newMessage, odId });
+            break;
+          }
+
+          case "typing_start": {
+            if (!odId) return;
+            const user = await storage.getUser(odId);
+            if (!user) return;
+            
+            broadcast(
+              { type: "typing_start", channelId: message.channelId, odId, username: user.username },
+              odId
+            );
+            break;
+          }
+
+          case "typing_stop": {
+            if (!odId) return;
+            broadcast(
+              { type: "typing_stop", channelId: message.channelId, odId },
+              odId
+            );
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("WebSocket message error:", error);
+      }
+    });
+
+    ws.on("close", async () => {
+      if (odId) {
+        clients.delete(odId);
+        await storage.updateUserStatus(odId, "offline");
+        broadcast({ type: "user_status", odId, status: "offline" });
+      }
+    });
+  });
+
+  app.post("/api/users", async (req, res) => {
+    try {
+      const validated = insertUserSchema.parse(req.body);
+      
+      const existingUser = await storage.getUserByUsername(validated.username);
+      if (existingUser) {
+        existingUser.status = "online";
+        return res.json(existingUser);
+      }
+      
+      const user = await storage.createUser(validated);
+      res.json(user);
+    } catch (error) {
+      console.error("Create user error:", error);
+      res.status(400).json({ error: "Invalid user data" });
+    }
+  });
+
+  app.get("/api/users/:id", async (req, res) => {
+    const user = await storage.getUser(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(user);
+  });
+
+  app.get("/api/channels", async (_req, res) => {
+    const channels = await storage.getChannels();
+    res.json(channels);
+  });
+
+  app.post("/api/channels", async (req, res) => {
+    try {
+      const validated = insertChannelSchema.parse(req.body);
+      const channel = await storage.createChannel(validated);
+      
+      broadcast({ type: "channel_created", channel });
+      
+      res.json(channel);
+    } catch (error) {
+      console.error("Create channel error:", error);
+      res.status(400).json({ error: "Invalid channel data" });
+    }
+  });
+
+  app.get("/api/channels/:id/messages", async (req, res) => {
+    const messages = await storage.getMessages(req.params.id);
+    res.json(messages);
+  });
+
+  app.post("/api/channels/:id/messages", async (req, res) => {
+    try {
+      const odId = req.headers["x-user-id"] as string;
+      if (!odId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const validated = insertMessageSchema.parse({
+        ...req.body,
+        channelId: req.params.id,
+      });
+      
+      const message = await storage.createMessage(odId, validated);
+      
+      broadcast({ type: "message", message });
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Create message error:", error);
+      res.status(400).json({ error: "Invalid message data" });
+    }
+  });
+
+  app.get("/api/friends", async (req, res) => {
+    const odId = req.headers["x-user-id"] as string;
+    if (!odId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const friends = await storage.getFriends(odId);
+    res.json(friends);
+  });
+
+  app.get("/api/friends/requests", async (req, res) => {
+    const odId = req.headers["x-user-id"] as string;
+    if (!odId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const requests = await storage.getFriendRequests(odId);
+    res.json(requests);
+  });
+
+  app.post("/api/friends/request", async (req, res) => {
+    try {
+      const odId = req.headers["x-user-id"] as string;
+      if (!odId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const validated = insertFriendRequestSchema.parse(req.body);
+      const request = await storage.createFriendRequest(odId, validated.toUsername);
+      
+      sendToUser(request.toUserId, { type: "friend_request", request });
+      
+      res.json(request);
+    } catch (error: unknown) {
+      console.error("Create friend request error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Invalid request";
+      res.status(400).json({ error: errorMessage });
+    }
+  });
+
+  app.post("/api/friends/accept/:requestId", async (req, res) => {
+    try {
+      const odId = req.headers["x-user-id"] as string;
+      if (!odId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const result = await storage.acceptFriendRequest(req.params.requestId);
+      if (!result) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      
+      sendToUser(result.friend2.odId, { type: "friend_accepted", friend: result.friend1 });
+      
+      res.json(result.friend1);
+    } catch (error) {
+      console.error("Accept friend request error:", error);
+      res.status(400).json({ error: "Failed to accept request" });
+    }
+  });
+
+  app.post("/api/friends/decline/:requestId", async (req, res) => {
+    try {
+      const success = await storage.declineFriendRequest(req.params.requestId);
+      if (!success) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Decline friend request error:", error);
+      res.status(400).json({ error: "Failed to decline request" });
+    }
+  });
+
+  app.get("/api/dm/:odId/messages", async (req, res) => {
+    const odId = req.headers["x-user-id"] as string;
+    if (!odId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const messages = await storage.getDMMessages(odId, req.params.odId);
+    res.json(messages);
+  });
 
   return httpServer;
 }
