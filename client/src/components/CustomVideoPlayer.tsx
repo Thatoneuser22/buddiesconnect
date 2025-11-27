@@ -173,7 +173,8 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
         <video
           ref={videoRef}
           src={src}
-          className="w-full max-h-48 sm:max-h-96 cursor-pointer object-contain"
+          className="w-full cursor-pointer object-contain"
+          style={{ maxHeight: '200px' }}
           onClick={togglePlay}
         />
 
