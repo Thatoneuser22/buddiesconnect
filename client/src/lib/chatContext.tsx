@@ -175,6 +175,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           });
           setOnlineUsers(newMap);
           break;
+        case "error":
+          // Error will be handled by calling context (e.g., spam prevention)
+          break;
       }
     };
 

@@ -134,20 +134,26 @@ export async function registerRoutes(
               return;
             }
             
-            const validatedMessage = insertMessageSchema.parse({
-              content,
-              channelId: message.channelId,
-              imageUrl: message.imageUrl,
-              videoUrl: message.videoUrl,
-              audioUrl: message.audioUrl,
-              replyToId: message.replyToId,
-            });
-            
-            const newMessage = await storage.createMessage(odId, validatedMessage);
-            newMessage.videoName = message.videoName;
-            newMessage.audioName = message.audioName;
-            
-            broadcast({ type: "message", message: newMessage });
+            try {
+              const validatedMessage = insertMessageSchema.parse({
+                content,
+                channelId: message.channelId,
+                imageUrl: message.imageUrl,
+                videoUrl: message.videoUrl,
+                audioUrl: message.audioUrl,
+                replyToId: message.replyToId,
+              });
+              
+              const newMessage = await storage.createMessage(odId, validatedMessage);
+              newMessage.videoName = message.videoName;
+              newMessage.audioName = message.audioName;
+              
+              broadcast({ type: "message", message: newMessage });
+            } catch (err) {
+              if (err instanceof Error && err.message.includes("Too many messages")) {
+                ws.send(JSON.stringify({ type: "error", message: err.message }));
+              }
+            }
             break;
           }
 

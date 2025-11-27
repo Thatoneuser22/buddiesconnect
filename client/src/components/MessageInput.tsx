@@ -16,6 +16,7 @@ export function MessageInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { sendMessage, activeChannel, replyingTo, setReplyingTo } = useChat();
   const { toast } = useToast();
+  const [lastMessageTime, setLastMessageTime] = useState(0);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -29,6 +30,13 @@ export function MessageInput() {
     if (!content.trim() && !imageUrl && !videoUrl && !audioUrl) return;
     if (!activeChannel) return;
 
+    const now = Date.now();
+    if (now - lastMessageTime < 1000) {
+      toast({ title: "Please wait", description: "You're sending messages too fast!", variant: "destructive" });
+      return;
+    }
+
+    setLastMessageTime(now);
     sendMessage(content.trim(), imageUrl, videoUrl, audioUrl, replyingTo?.id, videoName, audioName);
     setContent("");
     setImageUrl("");

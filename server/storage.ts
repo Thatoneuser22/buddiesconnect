@@ -42,6 +42,8 @@ export class MemStorage implements IStorage {
   private friendRequests: Map<string, FriendRequest>;
   private friendships: Map<string, Set<string>>;
   private dmMessages: Map<string, Message[]>;
+  private lastMessageTime: Map<string, number>;
+  private readonly MESSAGE_COOLDOWN_MS = 1000; // 1 second cooldown
 
   constructor() {
     this.users = new Map();
@@ -50,6 +52,7 @@ export class MemStorage implements IStorage {
     this.friendRequests = new Map();
     this.friendships = new Map();
     this.dmMessages = new Map();
+    this.lastMessageTime = new Map();
     
     const defaultChannels: InsertChannel[] = [
       { name: "general", type: "text" },
@@ -131,6 +134,14 @@ export class MemStorage implements IStorage {
   async createMessage(userId: string, insertMessage: InsertMessage): Promise<Message> {
     const user = await this.getUser(userId);
     if (!user) throw new Error("User not found");
+    
+    // Check rate limit
+    const now = Date.now();
+    const lastTime = this.lastMessageTime.get(userId) || 0;
+    if (now - lastTime < this.MESSAGE_COOLDOWN_MS) {
+      throw new Error("Too many messages. Please wait before sending another message.");
+    }
+    this.lastMessageTime.set(userId, now);
     
     const id = randomUUID();
     const message: Message = {
