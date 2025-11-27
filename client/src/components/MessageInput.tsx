@@ -126,58 +126,58 @@ export function MessageInput() {
   const isDisabled = !activeChannel || isUploading;
 
   return (
-    <div className="border-t p-3 bg-background animate-fade-in">
+    <div className="border-t p-2 sm:p-3 bg-background animate-fade-in">
       {replyingTo && (
-        <div className="mb-2 p-2 bg-secondary rounded flex items-center justify-between">
-          <div className="text-xs">
-            <p className="font-semibold text-blue-500">Replying to {replyingTo.username}</p>
+        <div className="mb-1 sm:mb-2 p-1 sm:p-2 bg-secondary rounded flex items-center justify-between">
+          <div className="text-xs min-w-0">
+            <p className="font-semibold text-blue-500 truncate">Replying to {replyingTo.username}</p>
             <p className="text-muted-foreground truncate">{replyingTo.content || "[media]"}</p>
           </div>
-          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setReplyingTo(null)}>
-            <X className="w-3 h-3" />
+          <Button size="icon" variant="ghost" className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" onClick={() => setReplyingTo(null)}>
+            <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           </Button>
         </div>
       )}
 
       {(imageUrl || videoUrl || audioUrl) && (
-        <div className="mb-3 flex gap-2 flex-wrap">
+        <div className="mb-2 sm:mb-3 flex gap-1 sm:gap-2 flex-wrap overflow-x-auto">
           {imageUrl && (
-            <div className="relative w-fit">
-              <img src={imageUrl} alt="preview" className="h-20 rounded" />
-              <button onClick={() => setImageUrl("")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
-                <X className="w-3 h-3" />
+            <div className="relative w-fit flex-shrink-0">
+              <img src={imageUrl} alt="preview" className="h-12 sm:h-20 rounded" />
+              <button onClick={() => setImageUrl("")} className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-red-500 text-white rounded-full p-0.5 sm:p-1 text-xs" type="button">
+                <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               </button>
             </div>
           )}
           {videoUrl && (
-            <div className="relative w-fit">
-              <div className="p-2 bg-secondary rounded">
-                <p className="text-xs text-muted-foreground mb-1 truncate max-w-xs">{videoName}</p>
-                <video src={videoUrl} className="h-20 rounded" />
+            <div className="relative w-fit flex-shrink-0">
+              <div className="p-1 sm:p-2 bg-secondary rounded">
+                <p className="text-xs text-muted-foreground mb-0.5 sm:mb-1 truncate max-w-xs">{videoName}</p>
+                <video src={videoUrl} className="h-12 sm:h-20 rounded" />
               </div>
-              <button onClick={() => { setVideoUrl(""); setVideoName(""); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
-                <X className="w-3 h-3" />
+              <button onClick={() => { setVideoUrl(""); setVideoName(""); }} className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-red-500 text-white rounded-full p-0.5 sm:p-1 text-xs" type="button">
+                <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               </button>
             </div>
           )}
           {audioUrl && (
-            <div className="relative w-fit">
-              <div className="p-2 bg-secondary rounded flex items-center gap-2">
+            <div className="relative w-fit flex-shrink-0">
+              <div className="p-1 sm:p-2 bg-secondary rounded flex items-center gap-1 sm:gap-2">
                 <span className="text-xs text-muted-foreground truncate max-w-xs">{audioName}</span>
-                <audio src={audioUrl} controls className="h-6" />
+                <audio src={audioUrl} controls className="h-5 sm:h-6" />
               </div>
-              <button onClick={() => { setAudioUrl(""); setAudioName(""); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
-                <X className="w-3 h-3" />
+              <button onClick={() => { setAudioUrl(""); setAudioName(""); }} className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-red-500 text-white rounded-full p-0.5 sm:p-1 text-xs" type="button">
+                <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               </button>
             </div>
           )}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2">
         <input ref={fileInputRef} type="file" accept="image/*,video/*,audio/*" onChange={handleFileSelect} className="hidden" disabled={isUploading} />
-        <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isDisabled}>
-          <Paperclip className="w-5 h-5" />
+        <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isDisabled} className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
+          <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
 
         <textarea
@@ -190,14 +190,14 @@ export function MessageInput() {
               handleSubmit(e as any);
             }
           }}
-          placeholder={isDisabled ? (isUploading ? "Uploading..." : "Select a channel") : "Type a message or paste a link..."}
+          placeholder={isDisabled ? (isUploading ? "Uploading..." : "Select a channel") : "Type a message..."}
           disabled={isDisabled}
           rows={1}
-          className="flex-1 resize-none p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 bg-black text-white placeholder-gray-400"
+          className="flex-1 resize-none p-1.5 sm:p-2 border rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         />
 
-        <Button type="submit" disabled={(!content.trim() && !imageUrl && !videoUrl && !audioUrl) || isDisabled}>
-          <Send className="w-4 h-4" />
+        <Button type="submit" disabled={(!content.trim() && !imageUrl && !videoUrl && !audioUrl) || isDisabled} className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0" size="icon">
+          <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </Button>
       </form>
     </div>
