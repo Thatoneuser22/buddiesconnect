@@ -23,7 +23,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = {
   id: string;
   username: string;
-  password: string;
+  password?: string;
   avatarColor: string;
   avatarUrl?: string;
   status: UserStatus;
