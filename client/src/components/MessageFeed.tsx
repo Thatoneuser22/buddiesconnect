@@ -1,26 +1,24 @@
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/lib/chatContext";
-import { UserAvatar } from "./UserAvatar";
 import { format } from "date-fns";
 import type { Message } from "@shared/schema";
 
 export function MessageFeed() {
-  const { messages, activeChannel, currentUser, activeDM, dmMessages, friends } = useChat();
+  const { messages, activeChannel } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const displayMessages = activeDM ? dmMessages : messages.filter(m => m.channelId === activeChannel?.id);
-  const dmFriend = activeDM ? friends.find(f => f.odId === activeDM) : null;
+  const displayMessages = messages.filter(m => m.channelId === activeChannel?.id);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "auto" });
   }, [displayMessages.length]);
 
-  if (!activeChannel && !activeDM) {
+  if (!activeChannel) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-muted-foreground">Select a channel to chat</p>
+        <p className="text-muted-foreground">Chat</p>
       </div>
     );
   }
@@ -30,7 +28,6 @@ export function MessageFeed() {
       <div className="p-4 space-y-4">
         {displayMessages.map((message) => (
           <div key={message.id} className="flex gap-3">
-            <UserAvatar username={message.username} avatarColor={message.avatarColor} size="sm" />
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">{message.username}</span>
