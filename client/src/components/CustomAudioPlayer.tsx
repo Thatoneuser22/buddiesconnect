@@ -8,6 +8,7 @@ interface CustomAudioPlayerProps {
 
 export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -120,11 +121,16 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   };
 
   return (
-    <div className="w-full p-3 bg-gradient-to-br from-slate-800 via-slate-800 to-blue-900/30 rounded-lg border border-slate-700 group hover:to-blue-900/40 transition">
+    <div 
+      ref={containerRef}
+      className={`w-full p-3 bg-gradient-to-br from-slate-800 to-blue-800 rounded-lg border border-blue-600 group transition-all ${
+        isPlaying ? "audio-playing" : ""
+      }`}
+    >
       <div className="flex items-start gap-3 mb-2">
-        <FileAudio className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+        <FileAudio className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-200 truncate">{title}</p>
+          <p className="text-sm font-medium text-blue-100 truncate">{title}</p>
         </div>
       </div>
 
@@ -134,23 +140,23 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:opacity-80 transition"
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4 text-slate-300" />
+            <Pause className="w-4 h-4 text-blue-200" />
           ) : (
-            <Play className="w-4 h-4 text-slate-300 ml-0.5" />
+            <Play className="w-4 h-4 text-blue-200 ml-0.5" />
           )}
         </button>
 
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-xs text-slate-400 whitespace-nowrap">{formatTime(currentTime)}</span>
+          <span className="text-xs text-blue-200 whitespace-nowrap">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max={duration || 0}
             value={currentTime}
             onChange={handleProgressChange}
-            className="flex-1 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-slate-400 hover:accent-slate-300"
+            className="flex-1 h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
           />
-          <span className="text-xs text-slate-400 whitespace-nowrap">{formatTime(duration)}</span>
+          <span className="text-xs text-blue-200 whitespace-nowrap">{formatTime(duration)}</span>
         </div>
 
         <button
@@ -158,9 +164,9 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition"
         >
           {isMuted ? (
-            <VolumeX className="w-4 h-4 text-slate-400" />
+            <VolumeX className="w-4 h-4 text-blue-300" />
           ) : (
-            <Volume2 className="w-4 h-4 text-slate-400" />
+            <Volume2 className="w-4 h-4 text-blue-300" />
           )}
         </button>
 
@@ -171,14 +177,14 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           step="0.05"
           value={isMuted ? 0 : volume}
           onChange={handleVolumeChange}
-          className="w-12 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-slate-400 hover:accent-slate-300"
+          className="w-12 h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
         />
 
         <button
           onClick={handleDownload}
           className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition opacity-0 group-hover:opacity-100"
         >
-          <Download className="w-4 h-4 text-slate-400" />
+          <Download className="w-4 h-4 text-blue-300" />
         </button>
       </div>
 
@@ -186,7 +192,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
         <select
           value={playbackRate}
           onChange={handlePlaybackRateChange}
-          className="text-xs bg-slate-700 text-slate-300 rounded px-2 py-1 cursor-pointer border border-slate-600"
+          className="text-xs bg-blue-900/60 text-blue-100 rounded px-2 py-1 cursor-pointer border border-blue-600"
         >
           <option value="0.5">0.5x</option>
           <option value="0.75">0.75x</option>
@@ -199,7 +205,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
         <select
           value={pitch}
           onChange={handlePitchChange}
-          className="text-xs bg-slate-700 text-slate-300 rounded px-2 py-1 cursor-pointer border border-slate-600"
+          className="text-xs bg-blue-900/60 text-blue-100 rounded px-2 py-1 cursor-pointer border border-blue-600"
         >
           <option value="-2">-2 tone</option>
           <option value="-1">-1 tone</option>
