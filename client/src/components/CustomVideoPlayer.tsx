@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Download } from "lucide-react";
 
 interface CustomVideoPlayerProps {
   src: string;
@@ -94,6 +94,15 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = src;
+    link.download = title || "video.mp4";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden">
       <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>
@@ -160,6 +169,13 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
               className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
             >
               <Maximize className="w-4 h-4 text-purple-300" />
+            </button>
+
+            <button
+              onClick={handleDownload}
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition"
+            >
+              <Download className="w-4 h-4 text-purple-300" />
             </button>
           </div>
         </div>

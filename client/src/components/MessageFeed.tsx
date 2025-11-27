@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/lib/chatContext";
 import { format } from "date-fns";
-import { Reply } from "lucide-react";
+import { Reply, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import { CustomVideoPlayer } from "./CustomVideoPlayer";
@@ -11,6 +11,15 @@ import type { Message } from "@shared/schema";
 export function MessageFeed() {
   const { messages, activeChannel, setReplyingTo } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const downloadFile = (url: string, filename: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const displayMessages = messages.filter(m => m.channelId === activeChannel?.id);
@@ -79,7 +88,16 @@ export function MessageFeed() {
                   </p>
                 )}
                 {message.imageUrl && (
-                  <img src={message.imageUrl} alt="attachment" className="mt-2 max-w-xs rounded max-h-64 object-cover" />
+                  <div className="mt-2 flex flex-col gap-2">
+                    <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-64 object-cover" />
+                    <button
+                      onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
+                      className="flex items-center gap-2 px-3 py-1 bg-secondary hover:bg-secondary/80 rounded text-sm text-foreground transition w-fit"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </button>
+                  </div>
                 )}
                 {message.videoUrl && (
                   <div className="mt-2 max-w-sm">

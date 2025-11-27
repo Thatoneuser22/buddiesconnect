@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Download } from "lucide-react";
 
 interface CustomAudioPlayerProps {
   src: string;
@@ -80,6 +80,15 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = src;
+    link.download = title || "audio.mp3";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="w-full p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/50">
       <p className="text-xs font-semibold text-blue-300 mb-3 truncate">{title}</p>
@@ -128,6 +137,13 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           onChange={handleVolumeChange}
           className="w-16 h-1 bg-blue-900/50 rounded-lg appearance-none cursor-pointer accent-blue-500"
         />
+
+        <button
+          onClick={handleDownload}
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-blue-500/20 rounded transition"
+        >
+          <Download className="w-4 h-4 text-blue-300" />
+        </button>
       </div>
 
       <audio ref={audioRef} src={src} />
