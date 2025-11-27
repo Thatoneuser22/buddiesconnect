@@ -193,7 +193,7 @@ export function MessageInput() {
           placeholder={isDisabled ? (isUploading ? "Uploading..." : "Select a channel") : "Type a message..."}
           disabled={isDisabled}
           rows={1}
-          className="flex-1 resize-none p-1.5 sm:p-2 border rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          className="flex-1 resize-none p-1.5 sm:p-2 border rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 bg-black text-white placeholder-gray-400"
         />
 
         <Button type="submit" disabled={(!content.trim() && !imageUrl && !videoUrl && !audioUrl) || isDisabled} className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0" size="icon">
