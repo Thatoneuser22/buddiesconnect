@@ -1,12 +1,13 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Download, FileAudio } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Download, FileAudio, X } from "lucide-react";
 
 interface CustomAudioPlayerProps {
   src: string;
   title: string;
+  onClose?: () => void;
 }
 
-export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
+export function CustomAudioPlayer({ src, title, onClose }: CustomAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -120,12 +121,20 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   };
 
   return (
-    <div className="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 group hover:bg-slate-750 transition">
+    <div className="fixed top-4 right-4 w-80 p-3 bg-slate-800 rounded-lg border border-slate-700 shadow-xl z-40 group">
       <div className="flex items-start gap-3 mb-2">
         <FileAudio className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-slate-200 truncate">{title}</p>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:opacity-80 transition"
+          >
+            <X className="w-4 h-4 text-slate-400" />
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -153,6 +162,26 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           <span className="text-xs text-slate-400 whitespace-nowrap">{formatTime(duration)}</span>
         </div>
 
+        <button
+          onClick={toggleMute}
+          className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:opacity-80 transition"
+        >
+          {isMuted ? (
+            <VolumeX className="w-4 h-4 text-slate-400" />
+          ) : (
+            <Volume2 className="w-4 h-4 text-slate-400" />
+          )}
+        </button>
+
+        <button
+          onClick={handleDownload}
+          className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:opacity-80 transition"
+        >
+          <Download className="w-4 h-4 text-slate-400" />
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 mt-2 flex-wrap">
         <select
           value={playbackRate}
           onChange={handlePlaybackRateChange}
@@ -178,17 +207,6 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           <option value="2">+2 tone</option>
         </select>
 
-        <button
-          onClick={toggleMute}
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition"
-        >
-          {isMuted ? (
-            <VolumeX className="w-4 h-4 text-slate-400" />
-          ) : (
-            <Volume2 className="w-4 h-4 text-slate-400" />
-          )}
-        </button>
-
         <input
           type="range"
           min="0"
@@ -196,15 +214,8 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           step="0.05"
           value={isMuted ? 0 : volume}
           onChange={handleVolumeChange}
-          className="w-12 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-slate-400 hover:accent-slate-300"
+          className="flex-1 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-slate-400 hover:accent-slate-300 min-w-[60px]"
         />
-
-        <button
-          onClick={handleDownload}
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition opacity-0 group-hover:opacity-100"
-        >
-          <Download className="w-4 h-4 text-slate-400" />
-        </button>
       </div>
 
       <audio ref={audioRef} src={src} />
