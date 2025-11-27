@@ -185,6 +185,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
             <select
               value={playbackRate}
               onChange={handlePlaybackRateChange}
+              title="Speed & Pitch"
               className="text-xs bg-purple-900/50 text-purple-200 rounded px-2 py-1 cursor-pointer border border-purple-500/30 pointer-events-auto"
             >
               <option value="0.5">0.5x</option>

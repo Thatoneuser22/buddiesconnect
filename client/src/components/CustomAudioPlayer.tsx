@@ -133,6 +133,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
         <select
           value={playbackRate}
           onChange={handlePlaybackRateChange}
+          title="Speed & Pitch"
           className="text-xs bg-blue-900/50 text-blue-300 rounded px-2 py-1 cursor-pointer border border-blue-500/30"
         >
           <option value="0.5">0.5x</option>
