@@ -100,7 +100,7 @@ export function MessageFeed() {
                   <div className="flex gap-3 items-start">
                     <div className="flex-1 ml-0">
                       {message.content && (
-                        <p className="text-sm break-words whitespace-pre-wrap max-w-xl">
+                        <p className="text-sm break-words whitespace-pre-wrap max-w-sm">
                           {isLink(message.content) ? (
                             isSafeLink(message.content) ? (
                               <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
@@ -115,7 +115,7 @@ export function MessageFeed() {
                         </p>
                       )}
                       {message.imageUrl && (
-                        <div className="mt-2 relative w-fit group">
+                        <div className="mt-2 relative w-fit group animate-fade-in">
                           <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-64 object-cover" />
                           <button
                             onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
@@ -127,12 +127,12 @@ export function MessageFeed() {
                         </div>
                       )}
                       {message.videoUrl && (
-                        <div className="mt-2 max-w-sm">
+                        <div className="mt-2 max-w-md animate-fade-in">
                           <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
                         </div>
                       )}
                       {message.audioUrl && (
-                        <div className="mt-2 max-w-sm">
+                        <div className="mt-2 max-w-md animate-fade-in">
                           <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
                         </div>
                       )}
