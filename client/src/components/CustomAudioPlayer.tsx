@@ -13,6 +13,8 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [pitch, setPitch] = useState(0);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -65,6 +67,30 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
     if (vol > 0) setIsMuted(false);
   };
 
+  const handlePlaybackRateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const rate = parseFloat(e.target.value);
+    setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+  };
+
+  const handlePitchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const pitchValue = parseFloat(e.target.value);
+    setPitch(pitchValue);
+    if (audioRef.current) {
+      const pitchRateMap: { [key: number]: number } = {
+        "-2": 0.794,
+        "-1": 0.891,
+        "0": 1,
+        "1": 1.122,
+        "2": 1.26,
+      };
+      const rate = pitchRateMap[pitchValue] || 1;
+      audioRef.current.playbackRate = playbackRate * rate;
+    }
+  };
+
   const toggleMute = () => {
     if (audioRef.current) {
       if (isMuted) {
@@ -102,7 +128,7 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button
           onClick={togglePlay}
           className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:opacity-80 transition"
@@ -126,6 +152,31 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           />
           <span className="text-xs text-slate-400 whitespace-nowrap">{formatTime(duration)}</span>
         </div>
+
+        <select
+          value={playbackRate}
+          onChange={handlePlaybackRateChange}
+          className="text-xs bg-slate-700 text-slate-300 rounded px-2 py-1 cursor-pointer border border-slate-600"
+        >
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+
+        <select
+          value={pitch}
+          onChange={handlePitchChange}
+          className="text-xs bg-slate-700 text-slate-300 rounded px-2 py-1 cursor-pointer border border-slate-600"
+        >
+          <option value="-2">-2 tone</option>
+          <option value="-1">-1 tone</option>
+          <option value="0">Normal</option>
+          <option value="1">+1 tone</option>
+          <option value="2">+2 tone</option>
+        </select>
 
         <button
           onClick={toggleMute}

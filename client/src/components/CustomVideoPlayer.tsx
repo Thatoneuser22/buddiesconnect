@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, Download } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Download, FileVideo } from "lucide-react";
 
 interface CustomVideoPlayerProps {
   src: string;
@@ -16,6 +16,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [pitch, setPitch] = useState(0);
   const hideControlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -90,6 +91,22 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
     }
   };
 
+  const handlePitchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const pitchValue = parseFloat(e.target.value);
+    setPitch(pitchValue);
+    if (videoRef.current) {
+      const pitchRateMap: { [key: number]: number } = {
+        "-2": 0.794,
+        "-1": 0.891,
+        "0": 1,
+        "1": 1.122,
+        "2": 1.26,
+      };
+      const rate = pitchRateMap[pitchValue] || 1;
+      videoRef.current.playbackRate = playbackRate * rate;
+    }
+  };
+
   const toggleMute = () => {
     if (videoRef.current) {
       if (isMuted) {
@@ -141,10 +158,13 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/50 overflow-hidden group">
-      <p className="text-xs font-semibold text-purple-300 p-3 truncate">{title}</p>
-      
-      <div className="relative bg-black group" onMouseMove={handleMouseMove}>
+    <div ref={containerRef} className="w-full bg-slate-800 rounded-lg border border-slate-700 overflow-hidden group">
+      <div className="flex items-center gap-2 p-2 bg-slate-900 border-b border-slate-700">
+        <FileVideo className="w-4 h-4 text-slate-400 flex-shrink-0" />
+        <p className="text-sm font-medium text-slate-200 truncate flex-1">{title}</p>
+      </div>
+
+      <div className="relative bg-black" onMouseMove={handleMouseMove}>
         <video
           ref={videoRef}
           src={src}
@@ -152,7 +172,7 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
           onClick={togglePlay}
         />
 
-        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity duration-300 pointer-events-none hover:pointer-events-auto ${
+        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 transition-opacity duration-300 pointer-events-none hover:pointer-events-auto ${
           showControls ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}>
           <input
@@ -161,32 +181,31 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
             max={duration || 0}
             value={currentTime}
             onChange={handleProgressChange}
-            className="w-full h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500 mb-2 pointer-events-auto"
+            className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-slate-400 hover:accent-slate-300 mb-2 pointer-events-auto"
           />
 
           <div className="flex items-center gap-2">
             <button
               onClick={togglePlay}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-purple-500 hover:bg-purple-600 rounded-full transition pointer-events-auto"
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:opacity-80 transition pointer-events-auto"
             >
               {isPlaying ? (
-                <Pause className="w-4 h-4 text-white" />
+                <Pause className="w-4 h-4 text-slate-300" />
               ) : (
-                <Play className="w-4 h-4 text-white ml-0.5" />
+                <Play className="w-4 h-4 text-slate-300 ml-0.5" />
               )}
             </button>
 
-            <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(currentTime)}</span>
-            <span className="text-xs text-purple-200">/</span>
-            <span className="text-xs text-purple-200 whitespace-nowrap">{formatTime(duration)}</span>
+            <span className="text-xs text-slate-400 whitespace-nowrap">{formatTime(currentTime)}</span>
+            <span className="text-xs text-slate-400">/</span>
+            <span className="text-xs text-slate-400 whitespace-nowrap">{formatTime(duration)}</span>
 
             <div className="flex-1" />
 
             <select
               value={playbackRate}
               onChange={handlePlaybackRateChange}
-              title="Speed & Pitch"
-              className="text-xs bg-purple-900/50 text-purple-200 rounded px-2 py-1 cursor-pointer border border-purple-500/30 pointer-events-auto"
+              className="text-xs bg-slate-700 text-slate-300 rounded px-2 py-1 cursor-pointer border border-slate-600 pointer-events-auto"
             >
               <option value="0.5">0.5x</option>
               <option value="0.75">0.75x</option>
@@ -196,14 +215,26 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
               <option value="2">2x</option>
             </select>
 
+            <select
+              value={pitch}
+              onChange={handlePitchChange}
+              className="text-xs bg-slate-700 text-slate-300 rounded px-2 py-1 cursor-pointer border border-slate-600 pointer-events-auto"
+            >
+              <option value="-2">-2 tone</option>
+              <option value="-1">-1 tone</option>
+              <option value="0">Normal</option>
+              <option value="1">+1 tone</option>
+              <option value="2">+2 tone</option>
+            </select>
+
             <button
               onClick={toggleMute}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto"
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition pointer-events-auto"
             >
               {isMuted ? (
-                <VolumeX className="w-4 h-4 text-purple-200" />
+                <VolumeX className="w-4 h-4 text-slate-400" />
               ) : (
-                <Volume2 className="w-4 h-4 text-purple-200" />
+                <Volume2 className="w-4 h-4 text-slate-400" />
               )}
             </button>
 
@@ -214,21 +245,21 @@ export function CustomVideoPlayer({ src, title }: CustomVideoPlayerProps) {
               step="0.1"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-12 h-1 bg-purple-900/50 rounded-lg appearance-none cursor-pointer accent-purple-500 pointer-events-auto"
+              className="w-12 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-slate-400 hover:accent-slate-300 pointer-events-auto"
             />
 
             <button
               onClick={toggleFullscreen}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto"
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition pointer-events-auto"
             >
-              <Maximize className="w-4 h-4 text-purple-200" />
+              <Maximize className="w-4 h-4 text-slate-400" />
             </button>
 
             <button
               onClick={handleDownload}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-purple-500/20 rounded transition pointer-events-auto opacity-0 group-hover:opacity-100"
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition pointer-events-auto opacity-0 group-hover:opacity-100"
             >
-              <Download className="w-4 h-4 text-purple-200" />
+              <Download className="w-4 h-4 text-slate-400" />
             </button>
           </div>
         </div>
