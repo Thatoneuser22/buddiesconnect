@@ -8,10 +8,11 @@ export function MessageInput() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState<string>("");
+  const [audioUrl, setAudioUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sendMessage, activeChannel } = useChat();
+  const { sendMessage, activeChannel, replyingTo, setReplyingTo } = useChat();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,13 +24,15 @@ export function MessageInput() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() && !imageUrl && !videoUrl) return;
+    if (!content.trim() && !imageUrl && !videoUrl && !audioUrl) return;
     if (!activeChannel) return;
 
-    sendMessage(content.trim(), imageUrl, videoUrl);
+    sendMessage(content.trim(), imageUrl, videoUrl, audioUrl, replyingTo?.id);
     setContent("");
     setImageUrl("");
     setVideoUrl("");
+    setAudioUrl("");
+    setReplyingTo(null);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +45,14 @@ export function MessageInput() {
 
     try {
       let endpoint = "/api/upload/image";
-      if (file.type.startsWith("video/")) {
+      if (file.type.startsWith("audio/")) {
+        endpoint = "/api/upload/audio";
+        if (file.size > 25 * 1024 * 1024) {
+          toast({ title: "File too large", description: "Max 25MB", variant: "destructive" });
+          setIsUploading(false);
+          return;
+        }
+      } else if (file.type.startsWith("video/")) {
         endpoint = "/api/upload/video";
         if (file.size > 50 * 1024 * 1024) {
           toast({ title: "File too large", description: "Max 50MB", variant: "destructive" });
@@ -56,7 +66,7 @@ export function MessageInput() {
           return;
         }
       } else {
-        toast({ title: "Invalid file", description: "Only images and videos allowed", variant: "destructive" });
+        toast({ title: "Invalid file", description: "Only images, videos, and audio allowed", variant: "destructive" });
         setIsUploading(false);
         return;
       }
@@ -64,7 +74,9 @@ export function MessageInput() {
       const res = await fetch(endpoint, { method: "POST", body: formData });
       const data = await res.json();
       
-      if (file.type.startsWith("video/")) {
+      if (file.type.startsWith("audio/")) {
+        setAudioUrl(data.url);
+      } else if (file.type.startsWith("video/")) {
         setVideoUrl(data.url);
       } else {
         setImageUrl(data.url);
@@ -81,8 +93,20 @@ export function MessageInput() {
 
   return (
     <div className="border-t p-3 bg-background">
-      {(imageUrl || videoUrl) && (
-        <div className="mb-3 flex gap-2">
+      {replyingTo && (
+        <div className="mb-2 p-2 bg-secondary rounded flex items-center justify-between">
+          <div className="text-xs">
+            <p className="font-semibold text-blue-500">Replying to {replyingTo.username}</p>
+            <p className="text-muted-foreground truncate">{replyingTo.content || "[media]"}</p>
+          </div>
+          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setReplyingTo(null)}>
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      )}
+
+      {(imageUrl || videoUrl || audioUrl) && (
+        <div className="mb-3 flex gap-2 flex-wrap">
           {imageUrl && (
             <div className="relative w-fit">
               <img src={imageUrl} alt="preview" className="h-20 rounded" />
@@ -99,11 +123,19 @@ export function MessageInput() {
               </button>
             </div>
           )}
+          {audioUrl && (
+            <div className="relative w-fit">
+              <audio src={audioUrl} controls className="h-8" />
+              <button onClick={() => setAudioUrl("")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs" type="button">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" disabled={isUploading} />
+        <input ref={fileInputRef} type="file" accept="image/*,video/*,audio/*" onChange={handleFileSelect} className="hidden" disabled={isUploading} />
         <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isDisabled}>
           <Paperclip className="w-5 h-5" />
         </Button>
@@ -124,7 +156,7 @@ export function MessageInput() {
           className="flex-1 resize-none p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 bg-black text-white placeholder-gray-400"
         />
 
-        <Button type="submit" disabled={(!content.trim() && !imageUrl && !videoUrl) || isDisabled}>
+        <Button type="submit" disabled={(!content.trim() && !imageUrl && !videoUrl && !audioUrl) || isDisabled}>
           <Send className="w-4 h-4" />
         </Button>
       </form>

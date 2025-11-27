@@ -20,7 +20,7 @@ interface ChatContextType {
   setDirectMessages: (dms: DirectMessage[]) => void;
   typingUsers: TypingUser[];
   onlineUsers: Map<string, User>;
-  sendMessage: (content: string, imageUrl?: string, videoUrl?: string) => void;
+  sendMessage: (content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string) => void;
   sendTypingStart: () => void;
   sendTypingStop: () => void;
   isConnected: boolean;
@@ -28,6 +28,8 @@ interface ChatContextType {
   setActiveDM: (odId: string | null) => void;
   dmMessages: Message[];
   setDmMessages: (messages: Message[]) => void;
+  replyingTo: Message | null;
+  setReplyingTo: (message: Message | null) => void;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -45,6 +47,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [activeDM, setActiveDM] = useState<string | null>(null);
   const [dmMessages, setDmMessages] = useState<Message[]>([]);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -180,12 +183,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUser, addMessage, activeDM]);
 
-  const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string) => {
+  const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string, audioUrl?: string, replyToId?: string) => {
     if (!wsRef.current || !currentUser) return;
     
     const messageData = activeDM 
-      ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl }
-      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl };
+      ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl, audioUrl, replyToId }
+      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl, audioUrl, replyToId };
     
     wsRef.current.send(JSON.stringify(messageData));
   }, [currentUser, activeChannel, activeDM]);
@@ -239,6 +242,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setActiveDM,
       dmMessages,
       setDmMessages,
+      replyingTo,
+      setReplyingTo,
     }}>
       {children}
     </ChatContext.Provider>

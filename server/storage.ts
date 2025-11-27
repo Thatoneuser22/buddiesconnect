@@ -143,7 +143,12 @@ export class MemStorage implements IStorage {
       timestamp: new Date().toISOString(),
       imageUrl: insertMessage.imageUrl,
       videoUrl: insertMessage.videoUrl,
+      audioUrl: insertMessage.audioUrl,
+      replyToId: insertMessage.replyToId,
     };
+    if (insertMessage.replyToId) {
+      message.replyTo = this.messages.get(insertMessage.replyToId);
+    }
     this.messages.set(id, message);
     return message;
   }

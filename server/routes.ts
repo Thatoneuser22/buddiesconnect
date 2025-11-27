@@ -87,6 +87,14 @@ export async function registerRoutes(
     res.json({ url });
   });
 
+  app.post("/api/upload/audio", storage_multer.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ url });
+  });
+
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
 
   wss.on("connection", (ws) => {
@@ -129,6 +137,8 @@ export async function registerRoutes(
               channelId: message.channelId,
               imageUrl: message.imageUrl,
               videoUrl: message.videoUrl,
+              audioUrl: message.audioUrl,
+              replyToId: message.replyToId,
             });
             
             const newMessage = await storage.createMessage(odId, validatedMessage);
