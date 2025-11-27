@@ -26,22 +26,29 @@ function containsBadWords(text: string): boolean {
 }
 
 function isSpam(text: string): boolean {
-  if (text.length < 3) return false;
+  const trimmed = text.trim();
+  
+  // Check for very short meaningless messages (under 5 chars, single word/letter)
+  const words = trimmed.split(/\s+/);
+  if (words.length === 1 && trimmed.length < 5) {
+    const filler = ["hi", "hey", "ok", "we", "me", "im", "i", "a"];
+    if (filler.includes(trimmed.toLowerCase())) return true;
+  }
   
   // Check for repeated characters (more than 4 in a row)
-  if (/(.)\1{4,}/.test(text)) return true;
+  if (/(.)\1{4,}/.test(trimmed)) return true;
   
   // Check for all caps with symbols/numbers (SPAM!!! or A1A1A1)
-  const capsWithSymbols = /^[A-Z0-9\s!?@#$%^&*()]{3,}$/.test(text);
-  const allCapsCount = (text.match(/[A-Z]/g) || []).length;
-  if (capsWithSymbols && allCapsCount > text.length * 0.6) return true;
+  const capsWithSymbols = /^[A-Z0-9\s!?@#$%^&*()]{3,}$/.test(trimmed);
+  const allCapsCount = (trimmed.match(/[A-Z]/g) || []).length;
+  if (capsWithSymbols && allCapsCount > trimmed.length * 0.6) return true;
   
   // Check for repeated short patterns (abcabcabc)
-  for (let len = 1; len <= Math.floor(text.length / 3); len++) {
-    const pattern = text.substring(0, len);
+  for (let len = 1; len <= Math.floor(trimmed.length / 3); len++) {
+    const pattern = trimmed.substring(0, len);
     let count = 0;
-    for (let i = 0; i < text.length; i += len) {
-      if (text.substring(i, i + len) === pattern) count++;
+    for (let i = 0; i < trimmed.length; i += len) {
+      if (trimmed.substring(i, i + len) === pattern) count++;
     }
     if (count >= 4) return true;
   }
