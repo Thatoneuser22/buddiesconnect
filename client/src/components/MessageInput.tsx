@@ -14,9 +14,11 @@ export function MessageInput() {
   const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sendMessage, activeChannel, replyingTo, setReplyingTo } = useChat();
+  const { sendMessage, activeChannel, replyingTo, setReplyingTo, sendTypingStart, sendTypingStop } = useChat();
   const { toast } = useToast();
   const [lastMessageTime, setLastMessageTime] = useState(0);
+  const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -24,6 +26,24 @@ export function MessageInput() {
       textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + "px";
     }
   }, [content]);
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+    
+    if (!isTypingRef.current && e.target.value.length > 0) {
+      sendTypingStart();
+      isTypingRef.current = true;
+    }
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      sendTypingStop();
+      isTypingRef.current = false;
+    }, 2000);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +183,7 @@ export function MessageInput() {
         <textarea
           ref={textareaRef}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={handleContentChange}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
