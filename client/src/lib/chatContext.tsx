@@ -118,12 +118,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       
       switch (data.type) {
         case "message":
-          // Only add if not already added by optimistic update
-          setMessages(prev => {
-            const exists = prev.some(m => (m.id === data.message.id || (m.userId === data.message.userId && m.timestamp === data.message.timestamp && m.content === data.message.content)));
-            if (exists) return prev;
-            return [...prev, data.message];
-          });
+          setMessages(prev => [...prev, data.message]);
           break;
         case "typing_start":
           setTypingUsers(prev => {

@@ -193,7 +193,8 @@ export async function registerRoutes(
               newMessage.videoName = message.videoName;
               newMessage.audioName = message.audioName;
               
-              broadcast({ type: "message", message: newMessage });
+              // Broadcast to other clients only - sender already has optimistic update
+              broadcast({ type: "message", message: newMessage }, odId);
             } catch (err) {
               if (err instanceof Error && err.message.includes("Too many messages")) {
                 ws.send(JSON.stringify({ type: "error", message: err.message }));
