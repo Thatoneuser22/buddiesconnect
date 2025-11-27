@@ -44,7 +44,8 @@ export const insertMessageSchema = z.object({
   content: z.string().max(2000),
   channelId: z.string(),
   imageUrl: z.string().optional(),
-}).refine(obj => obj.content.trim() || obj.imageUrl, { message: "Must have content or image" });
+  videoUrl: z.string().optional(),
+}).refine(obj => obj.content.trim() || obj.imageUrl || obj.videoUrl, { message: "Must have content, image, or video" });
 
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = {
@@ -56,6 +57,7 @@ export type Message = {
   avatarColor: string;
   timestamp: string;
   imageUrl?: string;
+  videoUrl?: string;
 };
 
 export const insertFriendRequestSchema = z.object({
