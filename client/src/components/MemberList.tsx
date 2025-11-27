@@ -4,7 +4,7 @@ import { useChat } from "@/lib/chatContext";
 export function MemberList() {
   const { onlineUsers, currentUser } = useChat();
 
-  const onlineList = Array.from(onlineUsers.entries()).map(([id, status]) => ({ id, status }));
+  const onlineList = Array.from(onlineUsers.values());
 
   return (
     <div className="w-48 border-l bg-background flex flex-col">
@@ -16,9 +16,9 @@ export function MemberList() {
           {onlineList.length === 0 ? (
             <p className="text-xs text-muted-foreground">No users online</p>
           ) : (
-            onlineList.map(({ id }) => (
-              <div key={id} className="text-sm text-muted-foreground">
-                {id === currentUser?.id ? `${currentUser.username} (you)` : id}
+            onlineList.map((user) => (
+              <div key={user.id} className="text-sm text-muted-foreground">
+                {user.id === currentUser?.id ? `${currentUser.username} (you)` : user.username || user.id}
               </div>
             ))
           )}

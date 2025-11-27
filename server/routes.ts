@@ -82,7 +82,6 @@ export async function registerRoutes(
               content,
               channelId: message.channelId,
               imageUrl: message.imageUrl,
-              videoUrl: message.videoUrl,
             });
             
             const newMessage = await storage.createMessage(odId, validatedMessage);

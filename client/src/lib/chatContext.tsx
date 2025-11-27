@@ -19,8 +19,8 @@ interface ChatContextType {
   directMessages: DirectMessage[];
   setDirectMessages: (dms: DirectMessage[]) => void;
   typingUsers: TypingUser[];
-  onlineUsers: Map<string, UserStatus>;
-  sendMessage: (content: string, imageUrl?: string, videoUrl?: string) => void;
+  onlineUsers: Map<string, User>;
+  sendMessage: (content: string, imageUrl?: string) => void;
   sendTypingStart: () => void;
   sendTypingStop: () => void;
   isConnected: boolean;
@@ -41,7 +41,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [directMessages, setDirectMessages] = useState<DirectMessage[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<Map<string, UserStatus>>(new Map());
+  const [onlineUsers, setOnlineUsers] = useState<Map<string, User>>(new Map());
   const [isConnected, setIsConnected] = useState(false);
   const [activeDM, setActiveDM] = useState<string | null>(null);
   const [dmMessages, setDmMessages] = useState<Message[]>([]);
@@ -128,11 +128,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           setTypingUsers(prev => prev.filter(u => !(u.odId === data.odId && u.channelId === data.channelId)));
           break;
         case "user_status":
-          setOnlineUsers(prev => {
-            const next = new Map(prev);
-            next.set(data.odId, data.status);
-            return next;
-          });
+          if (data.status === "online") {
+            // When user comes online, we'll add them to the map
+            // We need to fetch their info, but for now just track the status
+            setOnlineUsers(prev => {
+              const next = new Map(prev);
+              const existingUser = next.get(data.odId);
+              if (existingUser) {
+                next.set(data.odId, { ...existingUser, status: data.status });
+              }
+              return next;
+            });
+          } else {
+            setOnlineUsers(prev => {
+              const next = new Map(prev);
+              next.delete(data.odId);
+              return next;
+            });
+          }
           setFriends(prev => prev.map(f => 
             f.odId === data.odId ? { ...f, status: data.status } : f
           ));
@@ -152,8 +165,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           }
           break;
         case "users_online":
-          const newMap = new Map<string, UserStatus>();
-          data.users.forEach(u => newMap.set(u.id, u.status));
+          const newMap = new Map<string, User>();
+          data.users.forEach(u => {
+            const user: User = { id: u.id, username: u.id, avatarColor: "", status: u.status };
+            newMap.set(u.id, user);
+          });
           setOnlineUsers(newMap);
           break;
       }
@@ -164,12 +180,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUser, addMessage, activeDM]);
 
-  const sendMessage = useCallback((content: string, imageUrl?: string, videoUrl?: string) => {
+  const sendMessage = useCallback((content: string, imageUrl?: string) => {
     if (!wsRef.current || !currentUser) return;
     
     const messageData = activeDM 
-      ? { type: "dm_message", content, toUserId: activeDM, imageUrl, videoUrl }
-      : { type: "message", content, channelId: activeChannel?.id, imageUrl, videoUrl };
+      ? { type: "dm_message", content, toUserId: activeDM, imageUrl }
+      : { type: "message", content, channelId: activeChannel?.id, imageUrl };
     
     wsRef.current.send(JSON.stringify(messageData));
   }, [currentUser, activeChannel, activeDM]);
