@@ -2,25 +2,22 @@ import { Hash } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useChat } from "@/lib/chatContext";
-import { UserAvatar } from "./UserAvatar";
+import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export function ChannelSidebar() {
-  const { 
-    currentUser, 
-    channels, 
-    activeChannel,
-    setActiveChannel,
-    friends,
-    setActiveDM,
-    activeDM,
-  } = useChat();
-  const { toast } = useToast();
+  const { currentUser, channels, activeChannel, setActiveChannel, friends, setActiveDM, activeDM } = useChat();
+  const [, setLocation] = useLocation();
 
   const generalChannel = channels.find(c => c.name === "general");
 
+  const handleLogout = () => {
+    setLocation("/");
+    window.location.reload();
+  };
 
   return (
-    <div className="w-64 flex flex-col border-r h-full bg-background">
+    <div className="w-64 flex flex-col border-r h-full">
       <div className="p-4 border-b">
         <h1 className="font-bold text-lg">ChatterBox</h1>
       </div>
@@ -33,12 +30,9 @@ export function ChannelSidebar() {
                 setActiveChannel(generalChannel);
                 setActiveDM(null);
               }}
-              className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 ${
-                activeChannel?.id === generalChannel.id
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
+              className={`w-full text-left px-3 py-2 rounded text-sm flex items-center gap-2 ${
+                activeChannel?.id === generalChannel.id ? "bg-blue-500 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}
-              data-testid={`button-channel-${generalChannel.id}`}
             >
               <Hash className="w-4 h-4" />
               general
@@ -47,46 +41,36 @@ export function ChannelSidebar() {
 
           <Separator />
 
-          <div>
-            <h3 className="font-semibold text-sm mb-2">Friends</h3>
-            <div className="space-y-1">
-              {friends.map(friend => (
-                <button
-                  key={friend.odId}
-                  onClick={() => {
-                    setActiveDM(friend.odId);
-                    setActiveChannel(null);
-                  }}
-                  className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 ${
-                    activeDM === friend.odId
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                  data-testid={`button-friend-${friend.odId}`}
-                >
-                  <UserAvatar
-                    username={friend.username}
-                    avatarColor={friend.avatarColor}
-                    size="sm"
-                  />
-                  <span className="truncate">{friend.username}</span>
-                  <div className={`w-2 h-2 rounded-full ml-auto flex-shrink-0 ${friend.status === "online" ? "bg-green-500" : "bg-gray-400"}`} />
-                </button>
-              ))}
+          {friends.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-xs px-3 mb-2">Friends</h3>
+              <div className="space-y-1">
+                {friends.map(friend => (
+                  <button
+                    key={friend.odId}
+                    onClick={() => {
+                      setActiveDM(friend.odId);
+                      setActiveChannel(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded text-sm ${
+                      activeDM === friend.odId ? "bg-blue-500 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    {friend.username}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t">
-        <div className="flex items-center gap-2">
-          <UserAvatar
-            username={currentUser?.username || ""}
-            avatarColor={currentUser?.avatarColor || ""}
-            size="sm"
-          />
-          <span className="text-sm truncate flex-1">{currentUser?.username}</span>
-        </div>
+      <div className="p-4 border-t space-y-2">
+        <p className="text-xs text-muted-foreground">Logged in as</p>
+        <p className="font-semibold text-sm">{currentUser?.username}</p>
+        <Button onClick={handleLogout} size="sm" variant="outline" className="w-full text-xs">
+          Logout
+        </Button>
       </div>
     </div>
   );
