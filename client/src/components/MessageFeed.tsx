@@ -90,9 +90,9 @@ export function MessageFeed() {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative">
+    <div className="flex-1 flex flex-col relative" onContextMenu={(e) => { e.preventDefault(); handleContextMenu(e, (e.currentTarget as any).__message); }}>
       <ScrollArea className="flex-1">
-        <div className="p-2 sm:p-4 space-y-1">
+        <div className="p-2 sm:p-4 space-y-1" onContextMenu={(e) => e.preventDefault()}>
           {groupedMessages.map((group, groupIdx) => (
             <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
               {group.messages.map((message, msgIdx) => {
@@ -106,7 +106,11 @@ export function MessageFeed() {
                       isFirstInGroup ? "pt-1 sm:pt-2" : ""
                     } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
                     data-testid={`message-item-${message.id}`}
-                    onContextMenu={(e) => handleContextMenu(e, message)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleContextMenu(e, message);
+                    }}
                   >
                   {isFirstInGroup && (
                     <div className="flex items-center gap-1 sm:gap-2 mb-1">
@@ -149,7 +153,7 @@ export function MessageFeed() {
                       )}
                       {message.imageUrl && (
                         <div className="mt-1 sm:mt-2 relative w-fit group animate-fade-in">
-                          <img src={message.imageUrl} alt="attachment" className="max-w-xs sm:max-w-sm rounded max-h-40 sm:max-h-64 object-cover" />
+                          <img src={message.imageUrl} alt="attachment" className="max-w-xs sm:max-w-sm rounded max-h-40 sm:max-h-64 object-cover" onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, message); }} />
                           <button
                             onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
                             className="absolute top-1 sm:top-2 right-1 sm:right-2 flex items-center gap-1 px-1 sm:px-2 py-0.5 sm:py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
@@ -161,12 +165,16 @@ export function MessageFeed() {
                       )}
                       {message.videoUrl && (
                         <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
-                          <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
+                          <div onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, message); }}>
+                            <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
+                          </div>
                         </div>
                       )}
                       {message.audioUrl && (
                         <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
-                          <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
+                          <div onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, message); }}>
+                            <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -210,8 +218,11 @@ export function MessageFeed() {
       {contextMenu && (
         <div
           ref={contextMenuRef}
-          className="fixed bg-popover border border-border rounded-md shadow-md z-50 py-1 min-w-[120px]"
-          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+          className="fixed bg-popover border border-border rounded-md shadow-lg z-[9999] py-1 min-w-[140px]"
+          style={{ 
+            top: `${Math.min(contextMenu.y, window.innerHeight - 120)}px`, 
+            left: `${Math.min(contextMenu.x, window.innerWidth - 150)}px`
+          }}
         >
           <button
             onClick={() => {
