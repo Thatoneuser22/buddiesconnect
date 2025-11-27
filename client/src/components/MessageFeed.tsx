@@ -23,6 +23,16 @@ export function MessageFeed() {
     );
   }
 
+  const isSafeLink = (text: string): boolean => {
+    try {
+      const url = new URL(text);
+      const protocol = url.protocol;
+      return protocol === "http:" || protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
   const isLink = (text: string) => {
     try {
       new URL(text);
@@ -44,14 +54,18 @@ export function MessageFeed() {
               </div>
               <p className="text-sm">
                 {isLink(message.content) ? (
-                  <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                    {message.content}
-                  </a>
+                  isSafeLink(message.content) ? (
+                    <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                      {message.content}
+                    </a>
+                  ) : (
+                    <span className="text-gray-500 cursor-not-allowed">{message.content}</span>
+                  )
                 ) : (
                   message.content
                 )}
               </p>
-              {message.imageUrl && (
+              {message.imageUrl && message.imageUrl.startsWith("data:image/") && (
                 <img src={message.imageUrl} alt="attachment" className="mt-2 max-w-xs rounded max-h-64 object-cover" />
               )}
             </div>

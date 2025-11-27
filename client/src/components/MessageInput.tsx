@@ -29,9 +29,14 @@ export function MessageInput() {
     setImageUrl("");
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.type.startsWith("video/")) {
+      toast({ title: "Videos not supported", description: "Only images can be attached", variant: "destructive" });
+      return;
+    }
 
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "File too large", description: "Max 5MB", variant: "destructive" });
@@ -62,7 +67,7 @@ export function MessageInput() {
       )}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+        <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
         <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isDisabled}>
           <Paperclip className="w-5 h-5" />
         </Button>
