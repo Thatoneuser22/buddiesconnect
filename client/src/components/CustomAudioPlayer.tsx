@@ -123,45 +123,45 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
   return (
     <div 
       ref={containerRef}
-      className={`w-full p-3 bg-gradient-to-br from-slate-800 to-blue-800 rounded-lg border border-blue-600 group transition-all ${
+      className={`w-full p-1.5 sm:p-3 bg-gradient-to-br from-slate-800 to-blue-800 rounded-lg border border-blue-600 group transition-all ${
         isPlaying ? "audio-playing" : ""
       }`}
     >
-      <div className="flex items-start gap-3 mb-2">
+      <div className="hidden sm:flex items-start gap-3 mb-2">
         <FileAudio className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-blue-100 truncate">{title}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
         <button
           onClick={togglePlay}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:opacity-80 transition"
+          className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center hover:opacity-80 transition"
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4 text-blue-200" />
+            <Pause className="w-3 h-3 sm:w-4 sm:h-4 text-blue-200" />
           ) : (
-            <Play className="w-4 h-4 text-blue-200 ml-0.5" />
+            <Play className="w-3 h-3 sm:w-4 sm:h-4 text-blue-200 ml-0.5" />
           )}
         </button>
 
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-xs text-blue-200 whitespace-nowrap">{formatTime(currentTime)}</span>
+        <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+          <span className="text-xs text-blue-200 whitespace-nowrap hidden sm:inline">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max={duration || 0}
             value={currentTime}
             onChange={handleProgressChange}
-            className="flex-1 h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
+            className="flex-1 h-1 sm:h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
           />
-          <span className="text-xs text-blue-200 whitespace-nowrap">{formatTime(duration)}</span>
+          <span className="text-xs text-blue-200 whitespace-nowrap hidden sm:inline">{formatTime(duration)}</span>
         </div>
 
         <button
           onClick={toggleMute}
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition"
+          className="hidden sm:flex flex-shrink-0 w-6 h-6 items-center justify-center hover:opacity-80 transition"
         >
           {isMuted ? (
             <VolumeX className="w-4 h-4 text-blue-300" />
@@ -177,18 +177,18 @@ export function CustomAudioPlayer({ src, title }: CustomAudioPlayerProps) {
           step="0.05"
           value={isMuted ? 0 : volume}
           onChange={handleVolumeChange}
-          className="w-12 h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
+          className="hidden sm:block w-12 h-1.5 bg-blue-900/50 rounded-full appearance-none cursor-pointer accent-blue-400 hover:accent-blue-300"
         />
 
         <button
           onClick={handleDownload}
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:opacity-80 transition opacity-0 group-hover:opacity-100"
+          className="hidden sm:flex flex-shrink-0 w-6 h-6 items-center justify-center hover:opacity-80 transition opacity-0 group-hover:opacity-100"
         >
           <Download className="w-4 h-4 text-blue-300" />
         </button>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="hidden sm:flex items-center gap-2 flex-wrap">
         <select
           value={playbackRate}
           onChange={handlePlaybackRateChange}
