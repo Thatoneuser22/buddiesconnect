@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useChat } from "@/lib/chatContext";
@@ -13,8 +13,6 @@ export function MessageFeed() {
   const { messages, activeChannel, setReplyingTo, typingUsers } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; message: Message } | null>(null);
-  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const downloadFile = (url: string, filename: string) => {
     const link = document.createElement("a");
@@ -23,26 +21,7 @@ export function MessageFeed() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setContextMenu(null);
   };
-
-  const handleContextMenu = (e: React.MouseEvent, message: Message) => {
-    e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, message });
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
-        setContextMenu(null);
-      }
-    };
-
-    if (contextMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [contextMenu]);
 
   const displayMessages = messages.filter(m => m.channelId === activeChannel?.id);
   
@@ -90,28 +69,22 @@ export function MessageFeed() {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative" onContextMenu={(e) => { e.preventDefault(); handleContextMenu(e, (e.currentTarget as any).__message); }}>
-      <ScrollArea className="flex-1">
-        <div className="p-2 sm:p-4 space-y-1" onContextMenu={(e) => e.preventDefault()}>
-          {groupedMessages.map((group, groupIdx) => (
-            <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
-              {group.messages.map((message, msgIdx) => {
-                const isFirstInGroup = msgIdx === 0;
-                const isLastInGroup = msgIdx === group.messages.length - 1;
+    <ScrollArea className="flex-1">
+      <div className="p-2 sm:p-4 space-y-1">
+        {groupedMessages.map((group, groupIdx) => (
+          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
+            {group.messages.map((message, msgIdx) => {
+              const isFirstInGroup = msgIdx === 0;
+              const isLastInGroup = msgIdx === group.messages.length - 1;
 
-                return (
-                  <div
-                    key={message.id}
-                    className={`hover:bg-background/50 px-2 sm:px-4 py-1 rounded transition ${
-                      isFirstInGroup ? "pt-1 sm:pt-2" : ""
-                    } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
-                    data-testid={`message-item-${message.id}`}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleContextMenu(e, message);
-                    }}
-                  >
+              return (
+                <div
+                  key={message.id}
+                  className={`hover:bg-background/50 px-2 sm:px-4 py-1 rounded transition ${
+                    isFirstInGroup ? "pt-1 sm:pt-2" : ""
+                  } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
+                  data-testid={`message-item-${message.id}`}
+                >
                   {isFirstInGroup && (
                     <div className="flex items-center gap-1 sm:gap-2 mb-1">
                       <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
@@ -153,10 +126,11 @@ export function MessageFeed() {
                       )}
                       {message.imageUrl && (
                         <div className="mt-1 sm:mt-2 relative w-fit group animate-fade-in">
-                          <img src={message.imageUrl} alt="attachment" className="max-w-xs sm:max-w-sm rounded max-h-40 sm:max-h-64 object-cover" onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, message); }} />
+                          <img src={message.imageUrl} alt="attachment" className="max-w-xs sm:max-w-sm rounded max-h-40 sm:max-h-64 object-cover" />
                           <button
                             onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
                             className="absolute top-1 sm:top-2 right-1 sm:right-2 flex items-center gap-1 px-1 sm:px-2 py-0.5 sm:py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
+                            data-testid={`download-image-${message.id}`}
                           >
                             <Download className="w-3 h-3" />
                             <span className="hidden sm:inline">Download</span>
@@ -165,16 +139,12 @@ export function MessageFeed() {
                       )}
                       {message.videoUrl && (
                         <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
-                          <div onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, message); }}>
-                            <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
-                          </div>
+                          <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
                         </div>
                       )}
                       {message.audioUrl && (
                         <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
-                          <div onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, message); }}>
-                            <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
-                          </div>
+                          <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
                         </div>
                       )}
                     </div>
@@ -184,6 +154,7 @@ export function MessageFeed() {
                         variant="ghost"
                         className="opacity-0 group-hover:opacity-100 transition h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
                         onClick={() => setReplyingTo(message)}
+                        data-testid={`reply-button-${message.id}`}
                       >
                         <Reply className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
@@ -211,50 +182,8 @@ export function MessageFeed() {
           </div>
         )}
 
-          <div ref={bottomRef} />
-        </div>
-      </ScrollArea>
-
-      {contextMenu && (
-        <div
-          ref={contextMenuRef}
-          className="fixed bg-popover border border-border rounded-md shadow-lg z-[9999] py-1 min-w-[140px]"
-          style={{ 
-            top: `${Math.min(contextMenu.y, window.innerHeight - 120)}px`, 
-            left: `${Math.min(contextMenu.x, window.innerWidth - 150)}px`
-          }}
-        >
-          <button
-            onClick={() => {
-              setReplyingTo(contextMenu.message);
-              setContextMenu(null);
-            }}
-            className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 transition"
-            data-testid="context-menu-reply"
-          >
-            <Reply className="w-3 h-3" />
-            Reply
-          </button>
-
-          {(contextMenu.message.imageUrl || contextMenu.message.videoUrl || contextMenu.message.audioUrl) && (
-            <button
-              onClick={() => {
-                const isImage = contextMenu.message.imageUrl;
-                const isVideo = contextMenu.message.videoUrl;
-                const isAudio = contextMenu.message.audioUrl;
-                const url = isImage ? contextMenu.message.imageUrl! : isVideo ? contextMenu.message.videoUrl! : contextMenu.message.audioUrl!;
-                const filename = isImage ? "image.jpg" : isVideo ? contextMenu.message.videoName || "video.mp4" : contextMenu.message.audioName || "audio.mp3";
-                downloadFile(url, filename);
-              }}
-              className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 transition"
-              data-testid="context-menu-download"
-            >
-              <Download className="w-3 h-3" />
-              Download
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+        <div ref={bottomRef} />
+      </div>
+    </ScrollArea>
   );
 }
