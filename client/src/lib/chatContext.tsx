@@ -164,12 +164,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUser, addMessage, activeDM]);
 
-  const sendMessage = useCallback((content: string) => {
+  const sendMessage = useCallback((content: string, imageUrl?: string) => {
     if (!wsRef.current || !currentUser) return;
     
     const messageData = activeDM 
-      ? { type: "dm_message", content, toUserId: activeDM }
-      : { type: "message", content, channelId: activeChannel?.id };
+      ? { type: "dm_message", content, toUserId: activeDM, imageUrl }
+      : { type: "message", content, channelId: activeChannel?.id, imageUrl };
     
     wsRef.current.send(JSON.stringify(messageData));
   }, [currentUser, activeChannel, activeDM]);
