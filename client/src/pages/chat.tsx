@@ -33,9 +33,7 @@ export default function Chat() {
             <MessageFeed />
             <MessageInput />
           </div>
-          <div className="hidden sm:block">
-            <MemberList />
-          </div>
+          <MemberList />
         </div>
       </div>
     </div>

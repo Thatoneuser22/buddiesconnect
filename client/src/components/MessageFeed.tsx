@@ -100,9 +100,9 @@ export function MessageFeed() {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-2 sm:p-4 space-y-1">
+      <div className="p-1.5 sm:p-4 space-y-0.5 sm:space-y-1">
         {groupedMessages.map((group, groupIdx) => (
-          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-2 sm:mb-4">
+          <div key={`${group.user}-${groupIdx}`} className="group animate-message-slide-in mb-1 sm:mb-4">
             {group.messages.map((message, msgIdx) => {
               const isFirstInGroup = msgIdx === 0;
               const isLastInGroup = msgIdx === group.messages.length - 1;
@@ -110,15 +110,15 @@ export function MessageFeed() {
               return (
                 <div
                   key={message.id}
-                  className={`hover:bg-background/50 px-2 sm:px-4 py-1 rounded transition ${
-                    isFirstInGroup ? "pt-1 sm:pt-2" : ""
-                  } ${isLastInGroup ? "pb-1 sm:pb-2" : ""}`}
+                  className={`hover:bg-background/50 px-1.5 sm:px-4 py-0.5 sm:py-1 rounded transition ${
+                    isFirstInGroup ? "pt-0.5 sm:pt-2" : ""
+                  } ${isLastInGroup ? "pb-0.5 sm:pb-2" : ""}`}
                   data-testid={`message-item-${message.id}`}
                   onContextMenu={(e) => handleContextMenu(e, message)}
                 >
                   {isFirstInGroup && (
-                    <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                      <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+                    <div className="flex items-center gap-0.5 sm:gap-2 mb-0.5 sm:mb-1 flex-wrap">
+                      <Avatar className="h-4 w-4 sm:h-6 sm:w-6 flex-shrink-0">
                         {message.avatarUrl ? (
                           <AvatarImage src={message.avatarUrl} alt={message.username} />
                         ) : null}
@@ -126,22 +126,22 @@ export function MessageFeed() {
                           {message.username.split(" ").map(n => n[0]).join("").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-semibold text-xs sm:text-sm">{message.username}</span>
-                      <span className="text-xs text-muted-foreground">{format(new Date(message.timestamp), "h:mm a")}</span>
+                      <span className="font-semibold text-xs truncate">{message.username}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">{format(new Date(message.timestamp), "h:mm a")}</span>
                     </div>
                   )}
 
                   {message.replyTo && (
-                    <div className="text-xs mb-1 pl-2 sm:pl-3 border-l-2 border-muted-foreground text-muted-foreground mb-2">
-                      <p className="font-semibold text-blue-500 text-xs sm:text-sm">{message.replyTo.username}</p>
+                    <div className="text-xs mb-0.5 sm:mb-2 pl-1.5 sm:pl-3 border-l-2 border-muted-foreground text-muted-foreground">
+                      <p className="font-semibold text-blue-500 text-xs">{message.replyTo.username}</p>
                       <p className="truncate text-xs">{message.replyTo.content || "[media]"}</p>
                     </div>
                   )}
 
-                  <div className="flex gap-1 sm:gap-3 items-start">
-                    <div className="flex-1 ml-0">
+                  <div className="flex gap-0.5 sm:gap-3 items-start">
+                    <div className="flex-1 ml-0 min-w-0">
                       {message.content && (
-                        <p className="text-xs sm:text-sm break-words whitespace-pre-wrap max-w-xs sm:max-w-sm">
+                        <p className="text-xs break-words whitespace-pre-wrap max-w-xs">
                           {isLink(message.content) ? (
                             isSafeLink(message.content) ? (
                               <a href={message.content} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
@@ -156,25 +156,25 @@ export function MessageFeed() {
                         </p>
                       )}
                       {message.imageUrl && (
-                        <div className="mt-1 sm:mt-2 relative w-fit group animate-fade-in">
-                          <img src={message.imageUrl} alt="attachment" className="max-w-xs sm:max-w-sm rounded max-h-40 sm:max-h-64 object-cover" />
+                        <div className="mt-0.5 sm:mt-2 relative w-fit group animate-fade-in">
+                          <img src={message.imageUrl} alt="attachment" className="max-w-xs rounded max-h-32 sm:max-h-64 object-cover" />
                           <button
                             onClick={() => downloadFile(message.imageUrl!, "image.jpg")}
-                            className="absolute top-1 sm:top-2 right-1 sm:right-2 flex items-center gap-1 px-1 sm:px-2 py-0.5 sm:py-1 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
+                            className="absolute top-0.5 sm:top-2 right-0.5 sm:right-2 flex items-center gap-1 px-1 sm:px-2 py-0.5 bg-black/70 hover:bg-black/90 rounded text-xs text-white transition opacity-0 group-hover:opacity-100"
                             data-testid={`download-image-${message.id}`}
                           >
-                            <Download className="w-3 h-3" />
+                            <Download className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             <span className="hidden sm:inline">Download</span>
                           </button>
                         </div>
                       )}
                       {message.videoUrl && (
-                        <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
+                        <div className="mt-0.5 sm:mt-2 max-w-xs animate-fade-in">
                           <CustomVideoPlayer src={message.videoUrl} title={message.videoName || "Video"} />
                         </div>
                       )}
                       {message.audioUrl && (
-                        <div className="mt-1 sm:mt-2 max-w-xs sm:max-w-md animate-fade-in">
+                        <div className="mt-0.5 sm:mt-2 max-w-xs animate-fade-in">
                           <CustomAudioPlayer src={message.audioUrl} title={message.audioName || "Audio"} />
                         </div>
                       )}
@@ -183,11 +183,11 @@ export function MessageFeed() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="opacity-0 group-hover:opacity-100 transition h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
+                        className="opacity-0 group-hover:opacity-100 transition h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0"
                         onClick={() => setReplyingTo(message)}
                         data-testid={`reply-button-${message.id}`}
                       >
-                        <Reply className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <Reply className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
                       </Button>
                     )}
                   </div>

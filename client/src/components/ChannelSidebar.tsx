@@ -12,13 +12,13 @@ export function ChannelSidebar() {
   };
 
   return (
-    <div className="w-48 flex flex-col border-r h-full">
-      <div className="flex-1 p-4">
-        <p className="text-xs text-muted-foreground mb-2">User</p>
-        <p className="font-semibold text-sm">{currentUser?.username}</p>
+    <div className="w-32 sm:w-48 flex flex-col border-r h-full">
+      <div className="flex-1 p-2 sm:p-4">
+        <p className="text-xs text-muted-foreground mb-1 sm:mb-2">User</p>
+        <p className="font-semibold text-xs sm:text-sm truncate">{currentUser?.username}</p>
       </div>
 
-      <div className="p-4 border-t">
+      <div className="p-2 sm:p-4 border-t">
         <Button onClick={handleLogout} size="sm" variant="outline" className="w-full text-xs">
           Leave
         </Button>
